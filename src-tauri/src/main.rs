@@ -4,7 +4,10 @@
 mod config;
 mod utils;
 
-use std::fs;
+use std::{
+    env::{self, VarError},
+    fs,
+};
 
 use config::config::Config;
 use utils::utils::*;
@@ -13,25 +16,6 @@ use dotenv::dotenv;
 use twitch_irc::{
     login::StaticLoginCredentials, ClientConfig, SecureTCPTransport, TwitchIRCClient,
 };
-
-#[derive(Debug, thiserror::Error)]
-enum Error {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error("{0}")]
-    Other(String),
-    #[error(transparent)]
-    Any(#[from] anyhow::Error),
-}
-
-impl serde::Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_ref())
-    }
-}
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -47,11 +31,18 @@ fn logged() -> Result<bool, Error> {
     }
 }
 
+#[tauri::command]
+async fn save_token(auth: String) -> Result<(), Error> {
+    get_token_from_twitch(auth).await?;
+
+    Ok(())
+}
 fn main() {
     dotenv().ok();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![logged])
+        .invoke_handler(tauri::generate_handler![save_token])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
