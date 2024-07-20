@@ -1,5 +1,5 @@
 {
-  "svelte.enable-ts-plugin": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.wordBasedSuggestions": "off"
+    "svelte.enable-ts-plugin": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.wordBasedSuggestions": "off"
 }
