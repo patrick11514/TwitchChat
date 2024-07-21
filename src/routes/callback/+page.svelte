@@ -17,9 +17,10 @@
             return;
         }
         try {
-            console.log(await invoke('save_token', { auth: params.get('access_token')! }));
+            await invoke('save_token', { auth: params.get('access_token')! });
+            goto('/');
         } catch (_) {
-            console.log(_);
+            failed = true;
         }
     });
 </script>

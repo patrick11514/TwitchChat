@@ -13,7 +13,7 @@
     };
 </script>
 
-<div class="bg-secondary m-auto flex flex-col gap-2 rounded-md p-2">
+<div class="m-auto flex flex-col gap-2 rounded-md bg-secondary p-2">
     <Title>Login</Title>
     <Button on:click={login}>Click to login</Button>
 </div>

@@ -1,6 +1,7 @@
+#[allow(dead_code)]
 pub mod config {
     use std::{
-        fs::{self, File},
+        fs::{self},
         path::PathBuf,
         str,
     };
@@ -10,6 +11,7 @@ pub mod config {
     #[derive(Serialize, Deserialize)]
     pub struct Config {
         username: String,
+        display_name: String,
         token: String,
     }
 
@@ -19,8 +21,12 @@ pub mod config {
     }
 
     impl Config {
-        pub fn new(username: String, token: String) -> Self {
-            Config { username, token }
+        pub fn new(username: String, display_name: String, token: String) -> Self {
+            Config {
+                username,
+                display_name,
+                token,
+            }
         }
 
         pub fn write(self, program_directory: PathBuf) -> Result<(), anyhow::Error> {
@@ -43,6 +49,10 @@ pub mod config {
 
         pub fn get_username(&self) -> String {
             self.username.clone()
+        }
+
+        pub fn get_display_name(&self) -> String {
+            self.display_name.clone()
         }
 
         pub fn exists(program_directory: PathBuf) -> bool {

@@ -4,10 +4,7 @@
 mod config;
 mod utils;
 
-use std::{
-    env::{self, VarError},
-    fs,
-};
+use std::fs;
 
 use config::config::Config;
 use utils::utils::*;
@@ -33,16 +30,37 @@ fn logged() -> Result<bool, Error> {
 
 #[tauri::command]
 async fn save_token(auth: String) -> Result<(), Error> {
-    get_token_from_twitch(auth).await?;
+    let user_data = get_user_info(auth.clone()).await?;
+    let user_data = user_data.get_data();
+    if user_data.len() > 1 {
+        return Err(Error::Other("Cannot get user info".into()));
+    }
 
-    Ok(())
+    let user_data = match user_data.first() {
+        Some(data) => data,
+        None => {
+            return Err(Error::Other("Cannot get user info".into()));
+        }
+    };
+
+    let config = Config::new(user_data.get_login(), user_data.get_display_name(), auth);
+
+    match get_directory() {
+        Some(path) => {
+            if !path.exists() {
+                fs::create_dir(path.clone())?;
+            }
+            config.write(path)?;
+            Ok(())
+        }
+        None => Err(Error::Other("Unable to get home directory".into())),
+    }
 }
 fn main() {
     dotenv().ok();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![logged])
-        .invoke_handler(tauri::generate_handler![save_token])
+        .invoke_handler(tauri::generate_handler![logged, save_token])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
