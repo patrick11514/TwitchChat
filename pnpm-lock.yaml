@@ -11,6 +11,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1
         version: 1.6.0
+      sweetalert2:
+        specifier: ^11.12.3
+        version: 11.12.3
       tailwind-merge:
         specifier: ^2.4.0
         version: 2.4.0
@@ -1103,6 +1106,9 @@ packages:
     resolution: {integrity: sha512-d0FdzYIiAePqRJEb90WlJDkjUEx42xhivxN8muUBmfZnP+tzUgz12DJ2hRJi8sIHCME7jeK1PTMgKPSfTd8JrA==}
     engines: {node: '>=16'}
 
+  sweetalert2@11.12.3:
+    resolution: {integrity: sha512-tgGJSgfSV/xK113JEvhjwqKAuBYLXsZf0z+tGlHKQNnsLMi4eSNuzn9tt5hUdvjOVTLSPDgo0Lc+tnjy9Uj7Og==}
+
   tailwind-merge@2.4.0:
     resolution: {integrity: sha512-49AwoOQNKdqKPd9CViyH5wJoSKsCDjUlzL8DxuGp3P1FsGY36NJDAa18jLZcaHAUUuTj+JB8IAo8zWgBNvBF7A==}
 
@@ -2071,6 +2077,8 @@ snapshots:
       locate-character: 3.0.0
       magic-string: 0.30.10
       periscopic: 3.1.0
+
+  sweetalert2@11.12.3: {}
 
   tailwind-merge@2.4.0: {}
 
