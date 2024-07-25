@@ -49,41 +49,6 @@ pub mod utils {
         refresh_token: String,
     }
 
-    /*pub async fn get_token_from_twitch(auth: String) -> Result<(), anyhow::Error> {
-        let url: &str = "https://id.twitch.tv/oauth2/token";
-        let client = reqwest::Client::new();
-
-        let response = match client
-            .post(url)
-            .body(format!(
-            "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}",
-            env::var("PUBLIC_CLIENT_ID")?,
-            env::var("CLIENT_SECRET")?,
-            auth,
-            env::var("PUBLIC_REDIRECT_URI")?
-        ))
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .send()
-            .await
-        {
-            Ok(response) => Ok(response),
-            Err(_) => Err(Error::Other("Unable to fetch".into())),
-        }?;
-
-        let response = match response.text().await {
-            Ok(response) => Ok(response),
-            Err(_) => Err(Error::Other("Unable to get text".into())),
-        }?;
-
-        println!("{}", response);
-
-        let result: TwitchTokenResponse = serde_json::from_str(response.as_str())?;
-
-        println!("{}", result.expires_in);
-
-        Ok(())
-    }*/
-
     #[derive(Serialize, Deserialize, Clone)]
     pub struct TwitchResponse<T> {
         data: Vec<T>,

@@ -10,9 +10,6 @@ use config::config::Config;
 use utils::utils::*;
 
 use dotenv::dotenv;
-use twitch_irc::{
-    login::StaticLoginCredentials, ClientConfig, SecureTCPTransport, TwitchIRCClient,
-};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -56,11 +53,26 @@ async fn save_token(auth: String) -> Result<(), Error> {
         None => Err(Error::Other("Unable to get home directory".into())),
     }
 }
+
+#[tauri::command]
+fn get_config() -> Result<Config, Error> {
+    match get_directory() {
+        Some(path) => {
+            if !path.exists() {
+                return Err(Error::Other("Path directory doesn't exists.".into()));
+            }
+            let config = Config::from_file(path)?;
+            Ok(config)
+        }
+        None => Err(Error::Other("Unable to get home directory".into())),
+    }
+}
+
 fn main() {
     dotenv().ok();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![logged, save_token])
+        .invoke_handler(tauri::generate_handler![logged, save_token, get_config])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
