@@ -1,8 +1,9 @@
 <script lang="ts">
+    import 'bootstrap-icons/font/bootstrap-icons.min.css';
     import '../app.css';
     import '../fonts.css';
 </script>
 
-<main class="text-text font-roboto bg-background flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<main class="flex h-full min-h-screen w-full flex-col overflow-x-hidden bg-background font-roboto text-text">
     <slot />
 </main>

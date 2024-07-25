@@ -2,6 +2,7 @@
     import { invoke } from '@tauri-apps/api';
     import { onMount } from 'svelte';
     import LoginScreen from '../components/LoginScreen.svelte';
+    import TwitchChat from '../components/TwitchChat.svelte';
 
     let logged = false;
 
@@ -19,9 +20,7 @@
 </script>
 
 {#if logged}
-    Jsi lognutý :)
+    <TwitchChat />
 {:else}
     <LoginScreen />
 {/if}
-
-<button on:click={check}>Checkni to :)</button>
