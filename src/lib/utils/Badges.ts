@@ -39,4 +39,12 @@ export class Badges {
             yield badge;
         }
     }
+
+    first(): Badge | null {
+        return this.badges[0] || null;
+    }
+
+    last(): Badge | null {
+        return this.badges[this.badges.length - 1] || null;
+    }
 }
