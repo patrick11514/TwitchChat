@@ -137,4 +137,8 @@ export class WS extends EventEmitter<Event> {
 
         this.websocket.send(str);
     }
+
+    close() {
+        this.websocket.close();
+    }
 }
