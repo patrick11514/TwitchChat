@@ -14,6 +14,7 @@ type ResponseCommand = {
     PONG: undefined;
     JOIN: string;
     PART: string;
+    PRIVMSG: [string, string];
 };
 
 export class WS extends EventEmitter<Event> {
@@ -23,6 +24,7 @@ export class WS extends EventEmitter<Event> {
     private username: string;
     private token: string;
     currentChannel: string | null = null;
+    ready = false;
 
     constructor(username: string, token: string) {
         super();
@@ -95,6 +97,11 @@ export class WS extends EventEmitter<Event> {
         }
 
         if (command.isType('AUTHENTIFICATED')) {
+            this.ready = true;
+
+            //TODO: REMOVE
+            this.joinRoom('PatrikMint');
+
             super.emit('auth');
         }
 
@@ -127,15 +134,18 @@ export class WS extends EventEmitter<Event> {
 
         if (typeof params === 'string') {
             str += ` ${params}`;
+        } else if (typeof params === 'object') {
+            if (Array.isArray(params)) {
+                str += ` ${params.join(' ')}`;
+                Command;
+            }
         }
-        // TODO: If params is an array
-        //else if (typeof params === 'object') {
-        //    if (Array.isArray(params)) {
-        //        str += ` ${params.join(' ')}`;Command
-        //    }
-        //}
 
         this.websocket.send(str);
+    }
+
+    sendMessage(channel: string, message: string) {
+        this.send('PRIVMSG', [`#${channel}`, `:${message}`]);
     }
 
     close() {
