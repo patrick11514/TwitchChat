@@ -36,7 +36,8 @@ export class Command<$Name extends keyof CommandType> {
             case 'CLEARCHAT':
             case 'HOSTTARGET':
             case 'PRIVMSG':
-                return new Command(name as keyof CommandType, params[0]);
+                let param = params[0];
+                return new Command(name as keyof CommandType, name === 'JOIN' || name === 'PART' ? param.substring(1) : param);
             case 'PING':
                 return new Command(name, undefined);
             case 'CAP':
