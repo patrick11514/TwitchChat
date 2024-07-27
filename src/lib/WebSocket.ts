@@ -11,7 +11,7 @@ type Event = {
 };
 
 type ResponseCommand = {
-    PONG: undefined;
+    PONG: string;
     JOIN: string;
     PART: string;
     PRIVMSG: [string, string];
