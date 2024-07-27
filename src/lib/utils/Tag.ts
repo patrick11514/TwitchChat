@@ -33,10 +33,12 @@ export class Tag {
             case 'slow':
             case 'subs-only':
             case 'subscriber':
+            case 'vip':
                 this.value = value === '1' ? true : false;
                 break;
             case 'display-name':
             case 'user-id':
+            case 'id':
                 this.value = value;
                 break;
             default:

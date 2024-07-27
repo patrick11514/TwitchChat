@@ -15,6 +15,8 @@ export type TagData = {
     'subs-only': boolean;
     'display-name': string;
     'user-id': string;
+    vip: boolean;
+    id: string;
 };
 
 type TagValues = TagData[keyof TagData];
@@ -47,6 +49,16 @@ export class Tags {
         }
 
         return null;
+    }
+
+    getThrow<T extends keyof TagData>(name: T): TagData[T] {
+        for (const tag of this.tags) {
+            if (tag.name === name) {
+                return tag.value as TagData[T];
+            }
+        }
+
+        throw new Error(`Tag ${name} not found`);
     }
 
     *each() {
