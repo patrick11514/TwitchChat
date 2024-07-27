@@ -1,19 +1,24 @@
-<script lang="ts">
-    import { DEFAULT_ASSETS } from '$/lib/functions';
-    import type { WS } from '$/lib/WebSocket';
-    import { Key } from 'ts-key-enum';
-    import Button from './Button.svelte';
-    import Image from './Image.svelte';
-    import { ChannelUserData, CurrentChannel, GlobalBadges, UserData } from './Store.svelte';
-
-    export let ws: WS;
-
-    const getBadgeUrl = (name: string | undefined, quality: 1 | 2 | 4, version = 0): string | null => {
-        if (name === undefined) {
+<script lang="ts" context="module">
+    export const getBadgeUrl = (name: string | null | undefined, quality: 1 | 2 | 4, version = 0): string | null => {
+        if (name === undefined || name === null) {
             return null;
         }
-        return $GlobalBadges[name]?.[version]?.[`image_url_${quality}x`];
+        return get(GlobalBadges)[name]?.[version]?.[`image_url_${quality}x`];
     };
+</script>
+
+<script lang="ts">
+    import { DEFAULT_ASSETS } from '$/lib/functions';
+    import { Source } from '$/lib/utils/Source';
+    import type { WS } from '$/lib/WebSocket';
+    import { get } from 'svelte/store';
+    import { Key } from 'ts-key-enum';
+    import Button from './Button.svelte';
+    import { Messages } from './ChatWindow.svelte';
+    import Image from './Image.svelte';
+    import { ChannelUserData, Config, CurrentChannel, GlobalBadges, RawChannelTags, UserData } from './Store.svelte';
+
+    export let ws: WS;
 
     let message = '';
 
@@ -23,11 +28,23 @@
         }
 
         ws.sendMessage($CurrentChannel, message);
+
+        //add to message list
+        Messages.set([
+            ...$Messages,
+            {
+                date: new Date(),
+                content: message,
+                source: new Source(`${$Config.username}!localhost`),
+                tags: $RawChannelTags
+            }
+        ]);
+
         message = '';
     };
 </script>
 
-<div class="mt-auto flex flex-col gap-4 p-4">
+<div class="flex flex-col gap-4 px-4 pb-4">
     <div class="flex flex-row gap-2 rounded-md border-2 border-gray-500 px-2 py-1">
         <div class="my-auto h-auto w-5">
             {#if $ChannelUserData.badges?.first()}
@@ -47,7 +64,7 @@
             }}
             type="text"
             class="bg-transparent outline-none"
-            placeholder="Send meessage"
+            placeholder="Send message"
         />
     </div>
     <Button on:click={sendMessage} class="ml-auto w-28 text-lg">Odeslat</Button>
