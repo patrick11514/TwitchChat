@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
     import type { Badges } from '$/lib/utils/Badges';
+    import type { Tags } from '$/lib/utils/Tags';
     import { writable } from 'svelte/store';
     import { z } from 'zod';
 
@@ -16,6 +17,20 @@
 
     export const GlobalBadges = writable<Record<string, z.infer<typeof globalBadgeVersionSchema>>>();
 
+    export const GlobalEmotes = writable<
+        Record<
+            string,
+            {
+                name: string;
+                urls: {
+                    url_1x: string;
+                    url_2x: string;
+                    url_4x: string;
+                };
+            }
+        >
+    >();
+
     export const UserData = writable<{
         id: string;
         displayName: string;
@@ -28,6 +43,8 @@
         mod: boolean;
         subscriber: boolean;
     }>();
+
+    export const RawChannelTags = writable<Tags>();
 
     export const CurrentChannel = writable<string | null>(null);
 

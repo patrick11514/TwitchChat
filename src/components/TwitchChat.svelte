@@ -8,25 +8,14 @@
     import z from 'zod';
     import BottomBox from './BottomBox.svelte';
     import Button from './Button.svelte';
+    import ChatWindow, { Messages } from './ChatWindow.svelte';
     import Input from './Input.svelte';
-    import { ChannelUserData, Config, CurrentChannel, GlobalBadges, globalBadgeVersionSchema, UserData } from './Store.svelte';
+    import { ChannelUserData, Config, CurrentChannel, GlobalBadges, globalBadgeVersionSchema, GlobalEmotes, RawChannelTags, UserData } from './Store.svelte';
     import Title from './Title.svelte';
     import TopBox from './TopBox.svelte';
 
     //global badges
-    const init = async () => {
-        try {
-            Config.set(await invoke<typeof $Config>('get_config'));
-
-            setupWebsocket();
-        } catch (_) {
-            SwalAlert({
-                icon: 'error',
-                title: 'Unable to load config, try again'
-            });
-        }
-
-        //get badges
+    const getGlobalBadges = async () => {
         const badges = await customFetch(
             'https://api.twitch.tv/helix/chat/badges/global',
             {
@@ -59,6 +48,62 @@
         GlobalBadges.set(globalBadges);
     };
 
+    const getGlobalEmotes = async () => {
+        const emotes = await customFetch(
+            'https://api.twitch.tv/helix/chat/emotes/global',
+            {
+                method: 'GET',
+                headers: {
+                    'Client-Id': PUBLIC_CLIENT_ID,
+                    Authorization: `Bearer ${$Config.token}`
+                }
+            },
+            z.object({
+                data: z.array(
+                    z.object({
+                        id: z.string(),
+                        name: z.string(),
+                        images: z.object({
+                            url_1x: z.string(),
+                            url_2x: z.string(),
+                            url_4x: z.string()
+                        })
+                    })
+                )
+            })
+        );
+
+        if (emotes === null || emotes instanceof z.ZodError) {
+            return;
+        }
+
+        const globalEmotes: typeof $GlobalEmotes = {};
+
+        for (const emote of emotes.data) {
+            globalEmotes[emote.id] = {
+                name: emote.name,
+                urls: emote.images
+            };
+        }
+
+        GlobalEmotes.set(globalEmotes);
+    };
+
+    const init = async () => {
+        try {
+            Config.set(await invoke<typeof $Config>('get_config'));
+
+            setupWebsocket();
+        } catch (_) {
+            SwalAlert({
+                icon: 'error',
+                title: 'Unable to load config, try again'
+            });
+        }
+
+        Promise.allSettled([getGlobalBadges()]);
+    };
+
     onMount(() => {
         init();
 
@@ -76,14 +121,27 @@
 
         ws.on('message', (tags, source, command, params) => {
             if (command.isType('PING')) {
-                ws.send('PONG', undefined);
+                ws.send('PONG', params ?? '');
             }
 
             if (command.isType('PRIVMSG')) {
-                console.log(source, params);
+                if (!params || !source || !tags) {
+                    return;
+                }
+
+                Messages.set([
+                    ...$Messages,
+                    {
+                        date: new Date(),
+                        source: source,
+                        tags: tags,
+                        content: params
+                    }
+                ]);
             }
 
             //USER JOIN TO CHANNEL EVENT
+
             if (command.isType('JOIN')) {
                 if (!source) {
                     return;
@@ -134,6 +192,8 @@
                     mod: tags.get('mod')!,
                     subscriber: tags.get('subscriber')!
                 });
+
+                RawChannelTags.set(tags);
             }
         });
     };
@@ -179,8 +239,9 @@
             <Button on:click={joinChannel}>Enter</Button>
         </div>
     {:else if $ChannelUserData}
-        <section class="flex flex-1 flex-col">
+        <section class="flex max-h-screen flex-1 flex-col">
             <TopBox {ws} />
+            <ChatWindow />
             <BottomBox {ws} />
         </section>
     {/if}
