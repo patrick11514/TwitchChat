@@ -14,6 +14,10 @@ export class Badges {
         });
     }
 
+    length() {
+        return this.badges.length;
+    }
+
     has(name: string) {
         for (const badge of this.badges) {
             if (badge.name === name) {
