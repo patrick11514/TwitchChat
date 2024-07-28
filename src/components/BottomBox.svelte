@@ -104,7 +104,7 @@
                 }
             }}
             type="text"
-            class="bg-transparent outline-none"
+            class="w-full bg-transparent outline-none"
             placeholder="Send message"
         />
     </div>
