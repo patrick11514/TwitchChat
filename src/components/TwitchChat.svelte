@@ -8,7 +8,7 @@
     import z from 'zod';
     import BottomBox from './BottomBox.svelte';
     import Button from './Button.svelte';
-    import ChatWindow, { Messages } from './ChatWindow.svelte';
+    import ChatWindow, { DeletedMessages, Messages } from './ChatWindow.svelte';
     import Input from './Input.svelte';
     import { BadgeSchema, ChannelBadges, ChannelUserData, Config, CurrentChannel, GlobalBadges, GlobalEmotes, RawChannelTags, RoomId, UserData } from './Store.svelte';
     import Title from './Title.svelte';
@@ -183,8 +183,6 @@
                     return;
                 }
 
-                console.log(tags);
-
                 Messages.set([
                     ...$Messages,
                     {
@@ -290,6 +288,20 @@
 
                 RoomId.set(tags.get('room-id')!);
                 getChannelBadges();
+                return;
+            }
+
+            if (command.isType('CLEARMSG')) {
+                if (!tags || !tags.has('target-msg-id')) {
+                    return;
+                }
+
+                console.log($DeletedMessages);
+
+                DeletedMessages.set({
+                    ...$DeletedMessages,
+                    [tags.get('target-msg-id')!]: new Date()
+                });
                 return;
             }
         });

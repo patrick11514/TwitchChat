@@ -42,6 +42,7 @@ export class Tag {
             case 'user-id':
             case 'id':
             case 'room-id':
+            case 'target-msg-id':
                 this.value = value;
                 break;
             default:

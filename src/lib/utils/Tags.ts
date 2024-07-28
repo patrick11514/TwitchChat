@@ -20,6 +20,7 @@ export type TagData = {
     'first-msg': boolean;
     'returning-chatter': boolean;
     'room-id': string;
+    'target-msg-id': string;
 };
 
 type TagValues = TagData[keyof TagData];

@@ -1,8 +1,6 @@
 <script lang="ts" context="module">
-    import { Emotes } from '$/lib/utils/Emotes';
     import type { Source } from '$/lib/utils/Source';
     import type { Tags } from '$/lib/utils/Tags';
-    import { getBadge } from './BottomBox.svelte';
 
     type ChatMessage = {
         //user part
@@ -29,6 +27,9 @@
 </script>
 
 <script lang="ts">
+    import { Emotes } from '$/lib/utils/Emotes';
+    import { getBadge } from './BottomBox.svelte';
+    import { DeletedMessages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
 
     export let data: Message;
@@ -94,6 +95,7 @@
 <div
     class:bg-green-700={data.type === 'join'}
     class:bg-red-700={data.type === 'leave'}
+    class:line-through={data.type === 'chat' && $DeletedMessages[data.tags.get('id') ?? '']}
     class="block flex-wrap items-center gap-2 bg-transparent px-2 py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
 >
     {#if data.type === 'chat'}
@@ -115,6 +117,9 @@
                 {/if}
             {/each}
         </span>
+        {#if $DeletedMessages[data.tags.get('id') ?? '']}
+            <span class="text-gray-400"> (Message deleted at {format($DeletedMessages[data.tags.get('id') ?? ''])})</span>
+        {/if}
     {:else if data.type === 'join' || data.type == 'leave'}
         <span class="align-middle text-sm text-gray-400">{format(data.date)}</span>
         <span class="align-middle font-bold">{data.source.username} {data.type === 'join' ? 'joined' : 'left'} the chat</span>

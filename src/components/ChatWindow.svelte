@@ -4,6 +4,7 @@
     import Message, { type Message as MessageType } from './Message.svelte';
 
     export const Messages = writable<MessageType[]>([]);
+    export const DeletedMessages = writable<Record<string, Date>>({});
 </script>
 
 <script lang="ts">
