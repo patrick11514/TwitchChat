@@ -206,6 +206,16 @@
 
                 //if username is same as me, then I sucessfully joined channel
                 if (source.username === $Config.username) {
+                    //clear messages when join
+                    Messages.set([
+                        {
+                            type: 'join',
+                            date: new Date(),
+                            source
+                        }
+                    ]);
+                    DeletedMessages.set({});
+
                     CurrentChannel.set(command.data);
                     return;
                 }
