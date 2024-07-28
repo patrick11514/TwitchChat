@@ -6,9 +6,8 @@ export class Badges {
     constructor(raw: string) {
         this.badges = raw.split(',').map((text) => {
             const [name, id] = text.split('/');
-
             const badge = new Badge();
-            badge.id = parseInt(id);
+            badge.id = id;
             badge.name = name;
             return badge;
         });
@@ -28,9 +27,9 @@ export class Badges {
         return false;
     }
 
-    get(nameOrId: string | number): Badge | null {
+    get(nameOrId: string): Badge | null {
         for (const badge of this.badges) {
-            if (typeof nameOrId === 'string' ? badge.name === nameOrId : badge.id === nameOrId) {
+            if (badge.name === nameOrId || badge.id === nameOrId) {
                 return badge;
             }
         }

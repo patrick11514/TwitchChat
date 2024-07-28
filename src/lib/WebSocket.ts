@@ -100,7 +100,7 @@ export class WS extends EventEmitter<Event> {
             this.ready = true;
 
             //TODO: REMOVE
-            this.joinRoom('PatrikMint');
+            this.joinRoom('patrikmint');
 
             super.emit('auth');
         }

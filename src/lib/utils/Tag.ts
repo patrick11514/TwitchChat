@@ -34,11 +34,14 @@ export class Tag {
             case 'subs-only':
             case 'subscriber':
             case 'vip':
+            case 'first-msg':
+            case 'returning-chatter':
                 this.value = value === '1' ? true : false;
                 break;
             case 'display-name':
             case 'user-id':
             case 'id':
+            case 'room-id':
                 this.value = value;
                 break;
             default:

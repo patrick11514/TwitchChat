@@ -4,7 +4,7 @@
     import { writable } from 'svelte/store';
     import { z } from 'zod';
 
-    export const globalBadgeVersionSchema = z.array(
+    export const BadgeSchema = z.array(
         z.object({
             id: z.string(),
             image_url_1x: z.string(),
@@ -15,7 +15,21 @@
         })
     );
 
-    export const GlobalBadges = writable<Record<string, z.infer<typeof globalBadgeVersionSchema>>>();
+    type BadgeData = Record<
+        string,
+        Record<
+            string,
+            {
+                image_url_1x: string;
+                image_url_2x: string;
+                image_url_4x: string;
+                title: string;
+                description: string;
+            }
+        >
+    >;
+
+    export const GlobalBadges = writable<BadgeData>();
 
     export const GlobalEmotes = writable<
         Record<
@@ -30,6 +44,7 @@
             }
         >
     >();
+    export const ChannelBadges = writable<BadgeData>({});
 
     export const UserData = writable<{
         id: string;
@@ -45,8 +60,8 @@
     }>();
 
     export const RawChannelTags = writable<Tags>();
-
     export const CurrentChannel = writable<string | null>(null);
+    export const RoomId = writable<string>();
 
     export const Config = writable<{
         username: string;

@@ -10,7 +10,7 @@
     import Button from './Button.svelte';
     import ChatWindow, { Messages } from './ChatWindow.svelte';
     import Input from './Input.svelte';
-    import { ChannelUserData, Config, CurrentChannel, GlobalBadges, globalBadgeVersionSchema, GlobalEmotes, RawChannelTags, UserData } from './Store.svelte';
+    import { BadgeSchema, ChannelBadges, ChannelUserData, Config, CurrentChannel, GlobalBadges, GlobalEmotes, RawChannelTags, RoomId, UserData } from './Store.svelte';
     import Title from './Title.svelte';
     import TopBox from './TopBox.svelte';
 
@@ -29,7 +29,7 @@
                 data: z.array(
                     z.object({
                         set_id: z.string(),
-                        versions: globalBadgeVersionSchema
+                        versions: BadgeSchema
                     })
                 )
             })
@@ -42,7 +42,17 @@
         const globalBadges: typeof $GlobalBadges = {};
 
         for (const badge of badges.data) {
-            globalBadges[badge.set_id] = badge.versions;
+            globalBadges[badge.set_id] = {};
+
+            for (const version of badge.versions) {
+                globalBadges[badge.set_id][version.id] = {
+                    image_url_1x: version.image_url_1x,
+                    image_url_2x: version.image_url_2x,
+                    image_url_4x: version.image_url_4x,
+                    title: version.title,
+                    description: version.description
+                };
+            }
         }
 
         GlobalBadges.set(globalBadges);
@@ -89,6 +99,49 @@
         GlobalEmotes.set(globalEmotes);
     };
 
+    const getChannelBadges = async () => {
+        const badges = await customFetch(
+            `https://api.twitch.tv/helix/chat/badges?broadcaster_id=${$RoomId}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Client-Id': PUBLIC_CLIENT_ID,
+                    Authorization: `Bearer ${$Config.token}`
+                }
+            },
+            z.object({
+                data: z.array(
+                    z.object({
+                        set_id: z.string(),
+                        versions: BadgeSchema
+                    })
+                )
+            })
+        );
+
+        if (badges === null || badges instanceof z.ZodError) {
+            return;
+        }
+
+        const channelBadges: typeof $ChannelBadges = {};
+
+        for (const badge of badges.data) {
+            channelBadges[badge.set_id] = {};
+
+            for (const version of badge.versions) {
+                channelBadges[badge.set_id][version.id] = {
+                    image_url_1x: version.image_url_1x,
+                    image_url_2x: version.image_url_2x,
+                    image_url_4x: version.image_url_4x,
+                    title: version.title,
+                    description: version.description
+                };
+            }
+        }
+
+        ChannelBadges.set(channelBadges);
+    };
+
     const init = async () => {
         try {
             Config.set(await invoke<typeof $Config>('get_config'));
@@ -101,7 +154,7 @@
             });
         }
 
-        Promise.allSettled([getGlobalBadges()]);
+        Promise.allSettled([getGlobalBadges(), getGlobalEmotes()]);
     };
 
     onMount(() => {
@@ -129,15 +182,20 @@
                     return;
                 }
 
+                console.log(tags);
+
                 Messages.set([
                     ...$Messages,
                     {
+                        type: 'chat',
                         date: new Date(),
                         source: source,
                         tags: tags,
                         content: params
                     }
                 ]);
+
+                return;
             }
 
             //USER JOIN TO CHANNEL EVENT
@@ -152,6 +210,32 @@
                     CurrentChannel.set(command.data);
                     return;
                 }
+
+                Messages.set([
+                    ...$Messages,
+                    {
+                        type: 'join',
+                        date: new Date(),
+                        source
+                    }
+                ]);
+
+                return;
+            }
+
+            if (command.isType('PART')) {
+                if (!source) {
+                    return;
+                }
+
+                Messages.set([
+                    ...$Messages,
+                    {
+                        type: 'leave',
+                        date: new Date(),
+                        source
+                    }
+                ]);
 
                 return;
             }
@@ -175,6 +259,7 @@
                     displayName: tags.get('display-name')!,
                     badges: tags.get('badges')!
                 });
+                return;
             }
 
             if (command.isType('USERSTATE')) {
@@ -194,6 +279,17 @@
                 });
 
                 RawChannelTags.set(tags);
+                return;
+            }
+
+            if (command.isType('ROOMSTATE')) {
+                if (!tags || !tags.has('room-id')) {
+                    return;
+                }
+
+                RoomId.set(tags.get('room-id')!);
+                getChannelBadges();
+                return;
             }
         });
     };

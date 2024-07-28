@@ -17,6 +17,9 @@ export type TagData = {
     'user-id': string;
     vip: boolean;
     id: string;
+    'first-msg': boolean;
+    'returning-chatter': boolean;
+    'room-id': string;
 };
 
 type TagValues = TagData[keyof TagData];

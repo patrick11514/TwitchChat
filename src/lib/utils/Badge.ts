@@ -1,4 +1,4 @@
 export class Badge {
-    id!: number;
+    id!: string;
     name!: string;
 }
