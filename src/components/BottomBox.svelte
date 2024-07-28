@@ -64,14 +64,12 @@
 <script lang="ts">
     import { DEFAULT_ASSETS } from '$/lib/functions';
     import type { Badges } from '$/lib/utils/Badges';
-    import { Source } from '$/lib/utils/Source';
     import type { WS } from '$/lib/WebSocket';
     import { get } from 'svelte/store';
     import { Key } from 'ts-key-enum';
     import Button from './Button.svelte';
-    import { Messages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
-    import { ChannelBadges, ChannelUserData, Config, CurrentChannel, GlobalBadges, RawChannelTags, UserData } from './Store.svelte';
+    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, UserData } from './Store.svelte';
 
     export let ws: WS;
 
@@ -83,19 +81,6 @@
         }
 
         ws.sendMessage($CurrentChannel, message);
-
-        //add to message list
-        Messages.set([
-            ...$Messages,
-            {
-                type: 'chat',
-                date: new Date(),
-                content: message,
-                source: new Source(`${$Config.username}!localhost`),
-                tags: $RawChannelTags
-            }
-        ]);
-
         message = '';
     };
 </script>

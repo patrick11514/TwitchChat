@@ -161,20 +161,21 @@
         init();
 
         return () => {
-            if (ws) {
-                ws.close();
+            if (MainWebSocket) {
+                MainWebSocket.close();
             }
         };
     });
 
-    let ws: WS;
+    let MainWebSocket: WS;
+    let SendingWebSocket: WS;
 
     const setupWebsocket = async () => {
-        ws = new WS($Config.username, $Config.token);
+        MainWebSocket = new WS($Config.username, $Config.token);
 
-        ws.on('message', (tags, source, command, params) => {
+        MainWebSocket.on('message', (tags, source, command, params) => {
             if (command.isType('PING')) {
-                ws.send('PONG', params ?? '');
+                MainWebSocket.send('PONG', params ?? '');
             }
 
             if (command.isType('PRIVMSG')) {
@@ -292,6 +293,16 @@
                 return;
             }
         });
+
+        ///
+
+        SendingWebSocket = new WS($Config.username, $Config.token);
+
+        SendingWebSocket.on('message', (tags, source, command, params) => {
+            if (command.isType('PING')) {
+                MainWebSocket.send('PONG', params ?? '');
+            }
+        });
     };
 
     let newChannel = '';
@@ -305,7 +316,7 @@
             return;
         }
 
-        if (!ws.ready) {
+        if (!MainWebSocket.ready) {
             SwalAlert({
                 icon: 'error',
                 title: 'Websocket is not ready'
@@ -313,7 +324,7 @@
             return;
         }
 
-        ws.joinRoom(newChannel);
+        MainWebSocket.joinRoom(newChannel);
         newChannel = '';
     };
 </script>
@@ -336,9 +347,9 @@
         </div>
     {:else if $ChannelUserData}
         <section class="flex max-h-screen flex-1 flex-col">
-            <TopBox {ws} />
+            <TopBox ws={MainWebSocket} />
             <ChatWindow />
-            <BottomBox {ws} />
+            <BottomBox ws={SendingWebSocket} />
         </section>
     {/if}
 {/if}
