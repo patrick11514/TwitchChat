@@ -398,7 +398,16 @@
             return;
         }
 
+        //reset online people
+        OnlinePeople.set([]);
+        //reset all people in that chat which showed
+        AllPeople.set([]);
+        //reset people settings in old channel
+        PeopleSettings.set({});
+
+        //join channels
         MainWebSocket.joinRoom(newChannel);
+        SendingWebSocket.joinRoom(newChannel);
         newChannel = '';
     };
 </script>
@@ -421,7 +430,7 @@
         </div>
     {:else if $ChannelUserData}
         <section class="flex max-h-screen flex-1 flex-col">
-            <TopBox ws={MainWebSocket} />
+            <TopBox wss={[MainWebSocket, SendingWebSocket]} />
             <ChatWindow />
             <BottomBox ws={SendingWebSocket} />
         </section>

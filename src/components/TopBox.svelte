@@ -5,10 +5,10 @@
     import Button from './Button.svelte';
     import { Config, CurrentChannel } from './Store.svelte';
 
-    export let ws: WS;
+    export let wss: WS[];
 
-    $: ws?.on('message', (tags, source, command, params) => {
-        //USER LEAVEE CHANNEL EVENT
+    $: wss[0]?.on('message', (tags, source, command, params) => {
+        //USER LEAVE CHANNEL EVENT
         if (command.isType('PART')) {
             if (!source) {
                 return;
@@ -33,7 +33,7 @@
             return;
         }
 
-        if (!ws.ready) {
+        if (!wss.some((ws) => !ws.ready)) {
             SwalAlert({
                 icon: 'error',
                 title: 'Websocket is not ready'
@@ -41,7 +41,7 @@
             return;
         }
 
-        ws.leaveRoom($CurrentChannel);
+        wss.forEach((ws) => ws.leaveRoom($CurrentChannel));
     };
 </script>
 
