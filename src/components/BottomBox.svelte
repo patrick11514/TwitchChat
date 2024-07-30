@@ -62,14 +62,14 @@
 </script>
 
 <script lang="ts">
+    import type { WS } from '$/lib/WebSocket';
     import { DEFAULT_ASSETS } from '$/lib/functions';
     import type { Badges } from '$/lib/utils/Badges';
-    import type { WS } from '$/lib/WebSocket';
     import { get } from 'svelte/store';
     import { Key } from 'ts-key-enum';
     import Button from './Button.svelte';
     import Image from './Image.svelte';
-    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, UserData } from './Store.svelte';
+    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, PeopleSettings, UserData } from './Store.svelte';
 
     export let ws: WS;
 
@@ -83,9 +83,51 @@
         ws.sendMessage($CurrentChannel, message);
         message = '';
     };
+
+    let showMentionPicker = false;
+    let mentionTyped = '';
+
+    const watchMessage = (msg: string) => {
+        const lastAt = msg.split('').toReversed().join('').indexOf('@');
+
+        if (lastAt === -1) {
+            showMentionPicker = false;
+            return;
+        }
+
+        const position = msg.length - 1 - lastAt;
+
+        if (msg.substring(position).includes(' ')) {
+            showMentionPicker = false;
+            mentionTyped = '';
+        } else {
+            showMentionPicker = true;
+            mentionTyped = msg.substring(position + 1);
+        }
+    };
+
+    $: watchMessage(message);
+
+    const generateMentionList = (text: string) => {
+        return Object.entries($PeopleSettings).filter(([name, _]) => name.startsWith(text));
+    };
+
+    let input: HTMLInputElement;
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
+    {#if showMentionPicker}
+        <div class="flex w-full flex-col rounded-md border-2 border-gray-500">
+            {#each generateMentionList(mentionTyped) as [name, options]}
+                <button
+                    on:click={() => {
+                        message = message.substring(message.length - 1 - mentionTyped.length) + name;
+                    }}
+                    class="cursor-pointer px-2 py-0.5 text-left transition-colors duration-200 hover:bg-gray-500">{options.displayName}</button
+                >
+            {/each}
+        </div>
+    {/if}
     <div class="flex flex-row gap-2 rounded-md border-2 border-gray-500 px-2 py-1">
         <div class="my-auto h-auto w-5">
             {#if $ChannelUserData.badges?.first()}
@@ -97,6 +139,7 @@
             {/if}
         </div>
         <input
+            bind:this={input}
             bind:value={message}
             on:keypress={(ev) => {
                 if (ev.key === Key.Enter) {
