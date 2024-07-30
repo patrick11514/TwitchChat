@@ -4,6 +4,11 @@ export class Emotes {
     private emotes: Emote[];
 
     constructor(raw: string) {
+        if (raw.length === 0) {
+            this.emotes = [];
+            return;
+        }
+
         this.emotes = raw.split('/').map((text) => {
             const [name, textInfo] = text.split(':');
             const [start, end] = textInfo.split('-');

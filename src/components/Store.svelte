@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
     import type { Badges } from '$/lib/utils/Badges';
+    import type { Source } from '$/lib/utils/Source';
     import type { Tags } from '$/lib/utils/Tags';
     import { writable } from 'svelte/store';
     import { z } from 'zod';
@@ -68,4 +69,16 @@
         display_name: string;
         token: string;
     }>();
+
+    export const OnlinePeople = writable<Source[]>([]);
+    export const AllPeople = writable<Source[]>([]);
+    export const PeopleSettings = writable<
+        Record<
+            string,
+            {
+                color: string;
+                displayName: string;
+            }
+        >
+    >({});
 </script>

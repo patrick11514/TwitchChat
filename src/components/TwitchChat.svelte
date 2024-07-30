@@ -10,7 +10,21 @@
     import Button from './Button.svelte';
     import ChatWindow, { DeletedMessages, Messages } from './ChatWindow.svelte';
     import Input from './Input.svelte';
-    import { BadgeSchema, ChannelBadges, ChannelUserData, Config, CurrentChannel, GlobalBadges, GlobalEmotes, RawChannelTags, RoomId, UserData } from './Store.svelte';
+    import {
+        AllPeople,
+        BadgeSchema,
+        ChannelBadges,
+        ChannelUserData,
+        Config,
+        CurrentChannel,
+        GlobalBadges,
+        GlobalEmotes,
+        OnlinePeople,
+        PeopleSettings,
+        RawChannelTags,
+        RoomId,
+        UserData
+    } from './Store.svelte';
     import Title from './Title.svelte';
     import TopBox from './TopBox.svelte';
 
@@ -183,6 +197,13 @@
                     return;
                 }
 
+                if (source.username && !(source.username in $PeopleSettings)) {
+                    $PeopleSettings[source.username] = {
+                        color: tags.get('color')!,
+                        displayName: tags.get('display-name')!
+                    };
+                }
+
                 Messages.set([
                     ...$Messages,
                     {
@@ -229,6 +250,9 @@
                     }
                 ]);
 
+                OnlinePeople.set([...$OnlinePeople, source]);
+                AllPeople.set([...$AllPeople, source]);
+
                 return;
             }
 
@@ -245,6 +269,8 @@
                         source
                     }
                 ]);
+
+                OnlinePeople.set($OnlinePeople.filter((user) => user.username !== source.username));
 
                 return;
             }
@@ -268,6 +294,11 @@
                     displayName: tags.get('display-name')!,
                     badges: tags.get('badges')!
                 });
+
+                $PeopleSettings[$Config.display_name] = {
+                    color: tags.get('color')!,
+                    displayName: tags.get('display-name')!
+                };
                 return;
             }
 
@@ -322,7 +353,28 @@
 
         SendingWebSocket.on('message', (tags, source, command, params) => {
             if (command.isType('PING')) {
-                MainWebSocket.send('PONG', params ?? '');
+                SendingWebSocket.send('PONG', params ?? '');
+            }
+
+            //update userstate from response on sent message
+            if (command.isType('USERSTATE')) {
+                if (!tags) {
+                    return;
+                }
+
+                if (!tags.has('badge-info') || !tags.has('badges') || !tags.has('mod') || !tags.has('subscriber')) {
+                    return;
+                }
+
+                ChannelUserData.set({
+                    badgeInfo: tags.get('badge-info')!,
+                    badges: tags.get('badges')!,
+                    mod: tags.get('mod')!,
+                    subscriber: tags.get('subscriber')!
+                });
+
+                RawChannelTags.set(tags);
+                return;
             }
         });
     };

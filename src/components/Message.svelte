@@ -31,6 +31,7 @@
     import { getBadge } from './BottomBox.svelte';
     import { DeletedMessages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
+    import { AllPeople, Config, PeopleSettings } from './Store.svelte';
 
     export let data: Message;
 
@@ -49,32 +50,107 @@
         | {
               type: 'emote';
               url: string;
+          }
+        | {
+              type: 'mention';
+              content: string;
+              color: string;
           };
+
+    const mensionizeMessage = (message: string, name: string): string | PartType[] => {
+        const parts: PartType[] = [];
+
+        let find = name;
+        let start = message.toLocaleLowerCase().indexOf(find);
+
+        if (start == -1) {
+            return message;
+        }
+
+        //check for @
+        if (start > 0 && message[start - 1] === '@') {
+            //move start to @
+            --start;
+            find = '@' + find;
+        }
+
+        const pre = message.substring(0, start);
+        if (pre.length > 0) {
+            parts.push({
+                type: 'message',
+                content: pre
+            });
+        }
+
+        let displayName = find;
+        let color = '#ffffff';
+
+        if (name in $PeopleSettings) {
+            displayName = displayName.replace(name, $PeopleSettings[name].displayName);
+            color = $PeopleSettings[name].color;
+        }
+
+        parts.push({
+            type: 'mention',
+            content: displayName,
+            color: color
+        });
+
+        const endIndex = start + find.length;
+        const past = message.substring(endIndex);
+
+        if (past.length > 0) {
+            parts.push({
+                type: 'message',
+                content: past
+            });
+        }
+
+        return parts;
+    };
+
+    const findMention = (message: string): PartType[] => {
+        for (const username of [$Config.username, ...$AllPeople.map((u) => u.username)]) {
+            if (!username) {
+                continue;
+            }
+
+            const data = mensionizeMessage(message, username);
+
+            if (typeof data === 'string') {
+                continue;
+            }
+
+            return data;
+        }
+
+        return [
+            {
+                type: 'message',
+                content: message
+            }
+        ];
+    };
 
     const parseMessage = (message: string, emotes: Emotes | null): PartType[] => {
         if (emotes === null) {
-            return [
-                {
-                    type: 'message',
-                    content: message
-                }
-            ];
+            emotes = new Emotes('');
         }
 
         let currentIndex = 0;
-        const parts: PartType[] = [];
+        const emoteParts: PartType[] = [];
 
         for (const emote of emotes.each()) {
             const cut = message.substring(currentIndex, emote.textStart);
 
             if (cut.length > 0) {
-                parts.push({
+                emoteParts.push({
                     type: 'message',
                     content: cut
                 });
             }
 
-            parts.push({
+            emoteParts.push({
                 type: 'emote',
                 //Universal emote url
                 url: `https://static-cdn.jtvnw.net/emoticons/v2/${emote.name}/default/light/1.0`
@@ -83,12 +159,26 @@
             currentIndex = emote.textEnd + 1;
         }
 
-        parts.push({
+        emoteParts.push({
             type: 'message',
             content: message.substring(currentIndex, message.length)
         });
 
+        let parts: PartType[] = [];
+
+        for (const part of emoteParts) {
+            if (part.type === 'message') {
+                parts = parts.concat(findMention(part.content));
+            } else {
+                parts.push(part);
+            }
+        }
+
         return parts;
+    };
+
+    const hasMention = (message: string) => {
+        return message.toLocaleLowerCase().includes($Config.username);
     };
 </script>
 
@@ -96,6 +186,7 @@
     class:bg-green-700={data.type === 'join'}
     class:bg-red-700={data.type === 'leave'}
     class:line-through={data.type === 'chat' && $DeletedMessages[data.tags.get('id') ?? '']}
+    class:bg-red-900={data.type === 'chat' && hasMention(data.content)}
     class="block flex-wrap items-center gap-2 bg-transparent px-2 py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
 >
     {#if data.type === 'chat'}
@@ -114,6 +205,8 @@
                     {part.content}
                 {:else if part.type === 'emote'}
                     <Image class="inline-block" src={part.url} alt="Emote" />
+                {:else if part.type === 'mention'}
+                    <span style="color: {part.color};" class="font-bold">{part.content}</span>
                 {/if}
             {/each}
         </span>
