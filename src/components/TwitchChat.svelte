@@ -295,7 +295,7 @@
                     badges: tags.get('badges')!
                 });
 
-                $PeopleSettings[$Config.display_name] = {
+                $PeopleSettings[$Config.username] = {
                     color: tags.get('color')!,
                     displayName: tags.get('display-name')!
                 };
@@ -336,8 +336,6 @@
                 if (!tags || !tags.has('target-msg-id')) {
                     return;
                 }
-
-                console.log($DeletedMessages);
 
                 DeletedMessages.set({
                     ...$DeletedMessages,
