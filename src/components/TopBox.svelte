@@ -33,7 +33,7 @@
             return;
         }
 
-        if (!wss.some((ws) => !ws.ready)) {
+        if (wss.some((ws) => !ws.ready)) {
             SwalAlert({
                 icon: 'error',
                 title: 'Websocket is not ready'
