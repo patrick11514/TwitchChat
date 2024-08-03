@@ -109,22 +109,73 @@
     $: watchMessage(message);
 
     const generateMentionList = (text: string) => {
-        return Object.entries($PeopleSettings).filter(([name, _]) => name.startsWith(text));
+        return Object.entries($PeopleSettings).filter(([name, _]) => name.startsWith(text) && text.length !== name.length);
+    };
+
+    const mentionEntries = (text: string) => {
+        return Object.keys($PeopleSettings).filter((name) => name.startsWith(text) && text.length !== name.length).length;
+    };
+
+    const fillMention = (name: string) => {
+        message = message.substring(0, message.length - mentionTyped.length) + name;
+    };
+
+    const clickMention = (name: string) => {
+        fillMention(name);
+        input.focus();
     };
 
     let input: HTMLInputElement;
+    let buttons: HTMLButtonElement[] = [];
+
+    let selected = 0;
+
+    const inputOnKey = (
+        ev: KeyboardEvent & {
+            currentTarget: EventTarget & HTMLInputElement;
+        }
+    ) => {
+        const buttonsFilter = buttons.filter((btn) => btn);
+
+        if (ev.key === Key.ArrowDown) {
+            if (selected < buttonsFilter.length - 1) {
+                selected++;
+            }
+            return;
+        }
+
+        if (ev.key === Key.ArrowUp) {
+            if (selected > 0) {
+                selected--;
+            }
+            return;
+        }
+
+        if (ev.key === Key.Enter) {
+            if (showMentionPicker && mentionEntries(mentionTyped) > 0) {
+                buttonsFilter[selected].click();
+            } else {
+                sendMessage();
+            }
+            return;
+        }
+
+        selected = 0;
+    };
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
-    {#if showMentionPicker}
+    {#if showMentionPicker && mentionEntries(mentionTyped) > 0}
         <div class="flex w-full flex-col rounded-md border-2 border-gray-500">
-            {#each generateMentionList(mentionTyped) as [name, options]}
+            {#each generateMentionList(mentionTyped) as [name, options], id}
                 <button
-                    on:click={() => {
-                        message = message.substring(message.length - 1 - mentionTyped.length) + name;
-                    }}
-                    class="cursor-pointer px-2 py-0.5 text-left transition-colors duration-200 hover:bg-gray-500">{options.displayName}</button
+                    bind:this={buttons[id]}
+                    class:bg-gray-400={id === selected}
+                    on:click={() => clickMention(name)}
+                    class="cursor-pointer px-2 py-0.5 text-left transition-colors duration-200 hover:bg-gray-500"
                 >
+                    {options.displayName}
+                </button>
             {/each}
         </div>
     {/if}
@@ -138,18 +189,7 @@
                 <Image src={DEFAULT_ASSETS.TWITCH_DEFAULT_BADGE} alt="badge" />
             {/if}
         </div>
-        <input
-            bind:this={input}
-            bind:value={message}
-            on:keypress={(ev) => {
-                if (ev.key === Key.Enter) {
-                    sendMessage();
-                }
-            }}
-            type="text"
-            class="w-full bg-transparent outline-none"
-            placeholder="Send message"
-        />
+        <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
     </div>
     <Button on:click={sendMessage} class="ml-auto w-28 text-lg">Odeslat</Button>
 </div>
