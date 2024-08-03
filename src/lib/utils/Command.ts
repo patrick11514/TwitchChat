@@ -19,13 +19,10 @@ export type CommandType = {
 };
 
 export class Command<$Name extends keyof CommandType> {
-    name!: $Name;
-    data!: CommandType[$Name];
-
-    constructor(command: $Name, data: CommandType[$Name]) {
-        this.name = command;
-        this.data = data;
-    }
+    constructor(
+        public name: $Name,
+        public data: CommandType[$Name]
+    ) {}
 
     static create(raw: string) {
         const [name, ...params] = raw.split(' ');
