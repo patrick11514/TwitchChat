@@ -1,2 +1,2 @@
--   [ ] Mention menu should be accessable with tab
--   [ ] When click on mention, hide mention menu
+-   [x] Mention menu should be accessable with tab
+-   [x] When click on mention, hide mention menu
