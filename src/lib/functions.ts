@@ -1,5 +1,7 @@
 import type { PartType } from '$/components/Message.svelte';
+import { PeopleSettings } from '$/components/Store.svelte';
 import { browser } from '$app/environment';
+import { get } from 'svelte/store';
 import Swal, { type SweetAlertOptions } from 'sweetalert2';
 import z from 'zod';
 import { Emotes } from './utils/Emotes';
@@ -101,6 +103,52 @@ export const insertEmotes = (
         });
 
         currentIndex = 'textEnd' in emote ? emote.textEnd + 1 : emote.start + emote.emote.length;
+    }
+
+    emoteParts.push({
+        type: 'message',
+        content: message.substring(currentIndex, message.length)
+    });
+
+    return emoteParts;
+};
+
+export const insertMentions = (
+    message: string,
+    mentions: {
+        start: number;
+        name: string;
+        text: string;
+    }[]
+) => {
+    let currentIndex = 0;
+    const emoteParts: PartType[] = [];
+
+    for (const mention of mentions) {
+        const cut = message.substring(currentIndex, mention.start);
+
+        if (cut.length > 0) {
+            emoteParts.push({
+                type: 'message',
+                content: cut
+            });
+        }
+
+        let color = '#ffffff';
+        let displayName = mention.text;
+
+        if (mention.name in get(PeopleSettings)) {
+            displayName = displayName.replace(mention.name, get(PeopleSettings)[mention.name].displayName);
+            color = get(PeopleSettings)[mention.name].color;
+        }
+
+        emoteParts.push({
+            type: 'mention',
+            color,
+            content: displayName
+        });
+
+        currentIndex = mention.start + mention.text.length;
     }
 
     emoteParts.push({

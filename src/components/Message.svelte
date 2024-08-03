@@ -43,12 +43,12 @@
 </script>
 
 <script lang="ts">
-    import { insertEmotes } from '$/lib/functions';
+    import { indexOfAll, insertEmotes, insertMentions } from '$/lib/functions';
     import { Emotes } from '$/lib/utils/Emotes';
     import { getBadge } from './BottomBox.svelte';
     import { DeletedMessages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
-    import { AllPeople, Config, PeopleSettings, SevenTVData } from './Store.svelte';
+    import { AllPeople, Config, SevenTVData } from './Store.svelte';
 
     export let data: Message;
 
@@ -60,55 +60,36 @@
     };
 
     const mensionizeMessage = (message: string, name: string): string | PartType[] => {
-        const parts: PartType[] = [];
+        let starts = indexOfAll(message.toLocaleLowerCase(), name);
 
-        let find = name;
-        let start = message.toLocaleLowerCase().indexOf(find);
-
-        if (start == -1) {
+        if (starts.length === 0) {
             return message;
         }
 
-        //check for @
-        if (start > 0 && message[start - 1] === '@') {
-            //move start to @
-            --start;
-            find = '@' + find;
+        const finds: {
+            start: number;
+            name: string;
+            text: string;
+        }[] = [];
+
+        //modify for  @
+        for (const start of starts) {
+            if (start > 0 && message[start - 1] === '@') {
+                finds.push({
+                    start: start - 1,
+                    name,
+                    text: `@${name}`
+                });
+            } else {
+                finds.push({
+                    start: start,
+                    name,
+                    text: name
+                });
+            }
         }
 
-        const pre = message.substring(0, start);
-        if (pre.length > 0) {
-            parts.push({
-                type: 'message',
-                content: pre
-            });
-        }
-
-        let displayName = find;
-        let color = '#ffffff';
-
-        if (name in $PeopleSettings) {
-            displayName = displayName.replace(name, $PeopleSettings[name].displayName);
-            color = $PeopleSettings[name].color;
-        }
-
-        parts.push({
-            type: 'mention',
-            content: displayName,
-            color: color
-        });
-
-        const endIndex = start + find.length;
-        const past = message.substring(endIndex);
-
-        if (past.length > 0) {
-            parts.push({
-                type: 'message',
-                content: past
-            });
-        }
-
-        return parts;
+        return insertMentions(message, finds);
     };
 
     const findMention = (message: string): PartType[] => {
