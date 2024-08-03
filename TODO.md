@@ -1,2 +1,4 @@
 -   [x] Mention menu should be accessable with tab
 -   [x] When click on mention, hide mention menu
+-   [ ] Emote picker
+-   [ ] FFZ/BTTV?
