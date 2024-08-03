@@ -1,4 +1,5 @@
 <script lang="ts" context="module">
+    import { SevenTV } from '$/lib/7TVEmotes';
     import type { Badges } from '$/lib/utils/Badges';
     import type { Source } from '$/lib/utils/Source';
     import type { Tags } from '$/lib/utils/Tags';
@@ -81,4 +82,6 @@
             }
         >
     >({});
+
+    export const SevenTVData = writable<SevenTV>();
 </script>

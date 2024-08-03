@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { SevenTV } from '$/lib/7TVEmotes';
     import { customFetch, SwalAlert } from '$/lib/functions';
     import { WS } from '$/lib/WebSocket';
     import { PUBLIC_CLIENT_ID } from '$env/static/public';
@@ -23,6 +24,7 @@
         PeopleSettings,
         RawChannelTags,
         RoomId,
+        SevenTVData,
         UserData
     } from './Store.svelte';
     import Title from './Title.svelte';
@@ -156,6 +158,10 @@
         ChannelBadges.set(channelBadges);
     };
 
+    const loadSevenTV = async () => {
+        SevenTVData.set(await SevenTV.create($RoomId));
+    };
+
     const init = async () => {
         try {
             Config.set(await invoke<typeof $Config>('get_config'));
@@ -177,6 +183,10 @@
         return () => {
             if (MainWebSocket) {
                 MainWebSocket.close();
+            }
+
+            if (SendingWebSocket) {
+                SendingWebSocket.close();
             }
         };
     });
@@ -329,6 +339,7 @@
 
                 RoomId.set(tags.get('room-id')!);
                 getChannelBadges();
+                loadSevenTV();
                 return;
             }
 
