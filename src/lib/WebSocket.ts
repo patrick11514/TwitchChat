@@ -21,16 +21,14 @@ export class WS extends EventEmitter<Event> {
     private websocket!: WebSocket;
     connected = false;
 
-    private username: string;
-    private token: string;
     currentChannel: string | null = null;
     ready = false;
 
-    constructor(username: string, token: string) {
+    constructor(
+        private username: string,
+        private token: string
+    ) {
         super();
-
-        this.username = username;
-        this.token = token;
 
         this.connect();
     }
