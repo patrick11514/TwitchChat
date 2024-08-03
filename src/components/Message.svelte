@@ -24,14 +24,31 @@
     };
 
     export type Message = ChatMessage | JoinMessage | LeaveMessage;
+
+    export type PartType =
+        | {
+              type: 'message';
+              content: string;
+          }
+        | {
+              type: 'emote';
+              name: string;
+              url: string;
+          }
+        | {
+              type: 'mention';
+              content: string;
+              color: string;
+          };
 </script>
 
 <script lang="ts">
+    import { insertEmotes } from '$/lib/functions';
     import { Emotes } from '$/lib/utils/Emotes';
     import { getBadge } from './BottomBox.svelte';
     import { DeletedMessages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
-    import { AllPeople, Config, PeopleSettings } from './Store.svelte';
+    import { AllPeople, Config, PeopleSettings, SevenTVData } from './Store.svelte';
 
     export let data: Message;
 
@@ -41,21 +58,6 @@
 
         return `${hours}:${minutes}`;
     };
-
-    type PartType =
-        | {
-              type: 'message';
-              content: string;
-          }
-        | {
-              type: 'emote';
-              url: string;
-          }
-        | {
-              type: 'mention';
-              content: string;
-              color: string;
-          };
 
     const mensionizeMessage = (message: string, name: string): string | PartType[] => {
         const parts: PartType[] = [];
@@ -132,41 +134,15 @@
         ];
     };
 
+    //Helper function to insert all emotes from different providers in message
+    const insertAllEmotes = (message: string, emotes: Emotes | null) => {
+        return $SevenTVData.fillEmotes(insertEmotes(message, emotes));
+    };
+
     const parseMessage = (message: string, emotes: Emotes | null): PartType[] => {
-        if (emotes === null) {
-            emotes = new Emotes('');
-        }
-
-        let currentIndex = 0;
-        const emoteParts: PartType[] = [];
-
-        for (const emote of emotes.each()) {
-            const cut = message.substring(currentIndex, emote.textStart);
-
-            if (cut.length > 0) {
-                emoteParts.push({
-                    type: 'message',
-                    content: cut
-                });
-            }
-
-            emoteParts.push({
-                type: 'emote',
-                //Universal emote url
-                url: `https://static-cdn.jtvnw.net/emoticons/v2/${emote.name}/default/light/1.0`
-            });
-
-            currentIndex = emote.textEnd + 1;
-        }
-
-        emoteParts.push({
-            type: 'message',
-            content: message.substring(currentIndex, message.length)
-        });
-
         let parts: PartType[] = [];
 
-        for (const part of emoteParts) {
+        for (const part of insertAllEmotes(message, emotes)) {
             if (part.type === 'message') {
                 parts = parts.concat(findMention(part.content));
             } else {
@@ -194,7 +170,7 @@
         {#if data.tags.has('badges') && data.tags.get('badges')?.length}
             <div class="inline-flex flex-row gap-1 align-middle">
                 {#each data.tags.getThrow('badges').each() as badge}
-                    <Image class="inline-block" src={getBadge(badge.name, 1, data.tags.get('badge-info'), data.tags.get('badges'))} alt="badge" />
+                    <Image class="inline-block" src={getBadge(badge.name, 1, data.tags.get('badge-info'), data.tags.get('badges'))} alt={badge.name} />
                 {/each}
             </div>
         {/if}
@@ -204,7 +180,7 @@
                 {#if part.type === 'message'}
                     {part.content}
                 {:else if part.type === 'emote'}
-                    <Image class="inline-block" src={part.url} alt="Emote" />
+                    <Image class="inline-block" src={part.url} alt={part.name} />
                 {:else if part.type === 'mention'}
                     <span style="color: {part.color};" class="font-bold">{part.content}</span>
                 {/if}
