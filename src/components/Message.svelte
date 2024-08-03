@@ -59,60 +59,50 @@
         return `${hours}:${minutes}`;
     };
 
-    const mensionizeMessage = (message: string, name: string): string | PartType[] => {
-        let starts = indexOfAll(message.toLocaleLowerCase(), name);
-
-        if (starts.length === 0) {
-            return message;
-        }
-
+    const getAllMentions = (message: string): PartType[] => {
         const finds: {
             start: number;
             name: string;
             text: string;
         }[] = [];
 
-        //modify for  @
-        for (const start of starts) {
-            if (start > 0 && message[start - 1] === '@') {
-                finds.push({
-                    start: start - 1,
-                    name,
-                    text: `@${name}`
-                });
-            } else {
-                finds.push({
-                    start: start,
-                    name,
-                    text: name
-                });
-            }
-        }
-
-        return insertMentions(message, finds);
-    };
-
-    const findMention = (message: string): PartType[] => {
         for (const username of [$Config.username, ...$AllPeople.map((u) => u.username)]) {
             if (!username) {
                 continue;
             }
 
-            const data = mensionizeMessage(message, username);
+            let starts = indexOfAll(message.toLocaleLowerCase(), username);
 
-            if (typeof data === 'string') {
+            if (starts.length === 0) {
                 continue;
             }
 
-            return data;
+            for (const start of starts) {
+                if (start > 0 && message[start - 1] === '@') {
+                    finds.push({
+                        start: start - 1,
+                        name: username,
+                        text: `@${username}`
+                    });
+                } else {
+                    finds.push({
+                        start: start,
+                        name: username,
+                        text: username
+                    });
+                }
+            }
         }
 
-        return [
-            {
-                type: 'message',
-                content: message
-            }
-        ];
+        return insertMentions(
+            message,
+            //Here we need to sort our finds by start, to correctly replace each find in message, because we replace them from left to right
+            finds.toSorted((a, b) => (a.start > b.start ? 1 : -1))
+        );
+    };
+
+    const findMention = (message: string): PartType[] => {
+        return getAllMentions(message);
     };
 
     //Helper function to insert all emotes from different providers in message
