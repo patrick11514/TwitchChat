@@ -36,8 +36,6 @@
         const version = parseInt(s_version);
 
         if (isNaN(version)) {
-            console.log(channelBadge, s_version);
-
             return channelBadge[s_version]?.[`image_url_${quality}x`];
         }
 
