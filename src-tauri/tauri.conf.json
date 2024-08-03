@@ -65,7 +65,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": "all",
+      "targets": ["deb", "msi", "updater", "appimage"],
       "identifier": "cz.patrick115.twichchat",
       "icon": [
         "icons/32x32.png",
