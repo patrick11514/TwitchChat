@@ -5,13 +5,13 @@
         }
 
         if (info && info.has(name) && name !== 'predictions') {
-            return getBadgeUrl(name, quality, info.get(name)!.id);
+            return getBadgeData(name, quality, info.get(name)!.id);
         }
 
-        return getBadgeUrl(name, quality, badges.get(name)!.id);
+        return getBadgeData(name, quality, badges.get(name)!.id);
     };
 
-    export const getBadgeUrl = (name: string | null | undefined, quality: 1 | 2 | 4, s_version = '1'): string | null => {
+    export const getBadgeData = (name: string | null | undefined, quality: 1 | 2 | 4, s_version = '1') => {
         if (name === undefined || name === null) {
             return null;
         }
@@ -20,11 +20,18 @@
 
         type BadgeData = Record<
             string,
-            {
-                image_url_1x: string;
-                image_url_2x: string;
-                image_url_4x: string;
-            }
+            | {
+                  image_url_1x: string;
+                  image_url_2x: string;
+                  image_url_4x: string;
+                  name: string;
+              }
+            | {
+                  image_url_1x: string;
+                  image_url_2x: string;
+                  image_url_4x: string;
+                  title: string;
+              }
         >;
 
         let channelBadge: BadgeData = get(ChannelBadges)[name];
@@ -36,7 +43,7 @@
         const version = parseInt(s_version);
 
         if (isNaN(version)) {
-            return channelBadge[s_version]?.[`image_url_${quality}x`];
+            return channelBadge[s_version];
         }
 
         let lowest = 0;
@@ -51,18 +58,17 @@
             }
         }
 
-        return channelBadge[lowest]?.[`image_url_${quality}x`];
+        return channelBadge[lowest];
     };
 </script>
 
 <script lang="ts">
     import type { WS } from '$/lib/WebSocket';
-    import { DEFAULT_ASSETS } from '$/lib/functions';
     import type { Badges } from '$/lib/utils/Badges';
     import { get } from 'svelte/store';
     import { Key } from 'ts-key-enum';
+    import Badge from './Badge.svelte';
     import Button from './Button.svelte';
-    import Image from './Image.svelte';
     import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, PeopleSettings, UserData } from './Store.svelte';
 
     export let ws: WS;
@@ -162,6 +168,9 @@
 
         selected = 0;
     };
+
+    const channelBadge = $ChannelUserData.badges.first();
+    const userBadge = $UserData.badges?.first();
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
@@ -181,13 +190,7 @@
     {/if}
     <div class="flex flex-row gap-2 rounded-md border-2 border-gray-500 px-2 py-1">
         <div class="my-auto h-auto w-5">
-            {#if $ChannelUserData.badges?.first()}
-                <Image src={getBadge($ChannelUserData.badges.first()?.name, 1, $ChannelUserData.badgeInfo, $ChannelUserData.badges)} alt="badge" />
-            {:else if $UserData.badges?.first()}
-                <Image src={getBadge($UserData.badges.first()?.name, 1, $ChannelUserData.badgeInfo, $ChannelUserData.badges)} alt="badge" />
-            {:else}
-                <Image src={DEFAULT_ASSETS.TWITCH_DEFAULT_BADGE} alt="badge" />
-            {/if}
+            <Badge name={channelBadge ? channelBadge.name : userBadge ? userBadge.name : undefined} badgesInfo={$ChannelUserData.badgeInfo} badges={$ChannelUserData.badges} />
         </div>
         <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
     </div>

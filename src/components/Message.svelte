@@ -45,7 +45,7 @@
 <script lang="ts">
     import { indexOfAll, insertEmotes, insertMentions } from '$/lib/functions';
     import { Emotes } from '$/lib/utils/Emotes';
-    import { getBadge } from './BottomBox.svelte';
+    import Badge from './Badge.svelte';
     import { DeletedMessages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
     import { AllPeople, Config, SevenTVData } from './Store.svelte';
@@ -141,7 +141,7 @@
         {#if data.tags.has('badges') && data.tags.get('badges')?.length}
             <div class="inline-flex flex-row gap-1 align-middle">
                 {#each data.tags.getThrow('badges').each() as badge}
-                    <Image class="inline-block" src={getBadge(badge.name, 1, data.tags.get('badge-info'), data.tags.get('badges'))} alt={badge.name} />
+                    <Badge name={badge.name} badgesInfo={data.tags.get('badge-info')} badges={data.tags.get('badges')} />
                 {/each}
             </div>
         {/if}
