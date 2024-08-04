@@ -133,6 +133,12 @@
             currentTarget: EventTarget & HTMLInputElement;
         }
     ) => {
+        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab];
+
+        if (handleKeys.includes(ev.key as Key)) {
+            ev.preventDefault();
+        }
+
         const buttonsFilter = buttons.filter((btn) => btn);
 
         if (ev.key === Key.ArrowDown) {
