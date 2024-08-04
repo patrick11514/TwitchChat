@@ -151,7 +151,7 @@
                 {#if part.type === 'message'}
                     {part.content}
                 {:else if part.type === 'emote'}
-                    <Image class="inline-block" src={part.url} alt={part.name} />
+                    <Image class="inline-block" src={part.url} alt={part.name} title={part.name} />
                 {:else if part.type === 'mention'}
                     <span style="color: {part.color};" class="font-bold">{part.content}</span>
                 {/if}
