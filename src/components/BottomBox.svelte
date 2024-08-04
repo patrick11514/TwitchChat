@@ -51,10 +51,6 @@
             }
         }
 
-        if (name === 'sub-gifter') {
-            //console.log(name, lowest, version);
-        }
-
         return channelBadge[lowest]?.[`image_url_${quality}x`];
     };
 </script>
