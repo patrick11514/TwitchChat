@@ -165,6 +165,7 @@
     const init = async () => {
         try {
             Config.set(await invoke<typeof $Config>('get_config'));
+            await Promise.allSettled([getGlobalBadges(), getGlobalEmotes()]);
 
             setupWebsocket();
         } catch (_) {
@@ -173,8 +174,6 @@
                 title: 'Unable to load config, try again'
             });
         }
-
-        Promise.allSettled([getGlobalBadges(), getGlobalEmotes()]);
     };
 
     onMount(() => {
