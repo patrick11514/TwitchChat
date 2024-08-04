@@ -30,6 +30,9 @@
     import Title from './Title.svelte';
     import TopBox from './TopBox.svelte';
 
+    let assetsLoaded = 0;
+    const assetsNeededToLoad = 2;
+
     //global badges
     const getGlobalBadges = async () => {
         const badges = await customFetch(
@@ -72,6 +75,7 @@
         }
 
         GlobalBadges.set(globalBadges);
+        assetsLoaded++;
     };
 
     const getGlobalEmotes = async () => {
@@ -113,6 +117,7 @@
         }
 
         GlobalEmotes.set(globalEmotes);
+        assetsLoaded++;
     };
 
     const getChannelBadges = async () => {
@@ -423,6 +428,8 @@
 {#if $Config}
     {#if !$UserData}
         <Title class="my-auto">Loading...</Title>
+    {:else if assetsLoaded !== assetsNeededToLoad}
+        <Title class="my-auto">Loading user data...</Title>
     {:else if !$CurrentChannel}
         <div class="flex flex-1 flex-col items-center justify-center gap-2">
             <Title>Enter channel name</Title>
