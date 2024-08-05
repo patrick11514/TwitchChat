@@ -141,7 +141,7 @@
 
     let foundEmoteIndex = 0;
     let foundEmotes: FoundEmote[] = [];
-    let foundElms: HTMLDivElement[] = [];
+    let foundElms: HTMLButtonElement[] = [];
 
     const inputOnKey = (
         ev: KeyboardEvent & {
@@ -231,24 +231,20 @@
 
                 message = message.substring(0, message.length - currentEmoteSelectionText.length) + foundEmotes[foundEmoteIndex].name;
             } else {
-                const prev = foundEmoteIndex;
-
+                //may be usefull when I prevent SHIFT + Tab and use it for back scrolling
                 if (ev.shiftKey) {
                     if (foundEmoteIndex === 0) {
-                        foundEmoteIndex = foundEmotes.length - 1;
+                        selectEmote(foundEmotes.length - 1);
                     } else {
-                        foundEmoteIndex--;
+                        selectEmote(foundEmoteIndex - 1);
                     }
                 } else {
                     if (foundEmoteIndex === foundEmotes.length - 1) {
-                        foundEmoteIndex = 0;
+                        selectEmote(0);
                     } else {
-                        foundEmoteIndex++;
+                        selectEmote(foundEmoteIndex + 1);
                     }
                 }
-
-                foundElms[foundEmoteIndex]?.scrollIntoView();
-                message = message.substring(0, message.length - foundEmotes[prev].name.length) + foundEmotes[foundEmoteIndex].name;
             }
 
             return;
@@ -260,6 +256,14 @@
 
     const channelBadge = $ChannelUserData.badges.first();
     const userBadge = $UserData.badges?.first();
+
+    const selectEmote = (index: number) => {
+        const prev = foundEmoteIndex;
+        foundEmoteIndex = index;
+
+        foundElms[foundEmoteIndex]?.scrollIntoView();
+        message = message.substring(0, message.length - foundEmotes[prev].name.length) + foundEmotes[foundEmoteIndex].name;
+    };
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
@@ -282,28 +286,31 @@
             <Badge name={channelBadge ? channelBadge.name : userBadge ? userBadge.name : undefined} badgesInfo={$ChannelUserData.badgeInfo} badges={$ChannelUserData.badges} />
         </div>
         {#if selectingEmote}
-            <div class="absolute bottom-28 left-[50%] mx-auto w-[60%] min-w-80 -translate-x-[50%] items-center justify-center whitespace-nowrap">
-                <div
-                    class="inline-block w-max max-w-full flex-row items-center justify-center overflow-x-auto whitespace-nowrap rounded-md border-2 border-gray-500 bg-secondary p-2"
-                >
-                    {#if foundEmotes.length == 0}
-                        <span class="font-poppins font-bold text-red-500">No emote found :(</span>
-                    {:else}
-                        {#each foundEmotes as emote, i}
-                            <div
-                                bind:this={foundElms[i]}
-                                class:bg-primary={i === foundEmoteIndex}
-                                class="mx-1 inline-flex aspect-square h-24 w-24 flex-col items-center justify-between overflow-x-hidden rounded-md"
-                            >
-                                <div class="flex h-full w-full">
-                                    <Image class="m-auto h-16 w-auto" src={emote.preview} alt={emote.name} title={emote.name} />
-                                </div>
-                                <span class="overflow-ellipsis align-middle font-poppins font-bold">{emote.name}</span>
-                            </div>
-                        {/each}
-                    {/if}
+            <section class="absolute bottom-28 left-0 flex w-full items-center justify-center">
+                <div class="mx-auto flex w-[60%] min-w-80 items-center justify-center whitespace-nowrap">
+                    <div
+                        class="inline-block w-max max-w-full flex-row items-center justify-center self-center overflow-x-auto whitespace-nowrap rounded-md border-2 border-gray-500 bg-secondary p-2"
+                    >
+                        {#if foundEmotes.length == 0}
+                            <span class="font-poppins font-bold text-red-500">No emote found :(</span>
+                        {:else}
+                            {#each foundEmotes as emote, i}
+                                <button
+                                    bind:this={foundElms[i]}
+                                    class:bg-primary={i === foundEmoteIndex}
+                                    class="mx-1 inline-flex aspect-square h-24 w-24 flex-col items-center justify-between overflow-x-hidden rounded-md transition-colors duration-150 hover:bg-primary"
+                                    on:click={() => selectEmote(i)}
+                                >
+                                    <div class="flex h-full w-full">
+                                        <Image class="m-auto h-16 w-auto" src={emote.preview} alt={emote.name} title={emote.name} />
+                                    </div>
+                                    <span class="overflow-ellipsis align-middle font-poppins font-bold">{emote.name}</span>
+                                </button>
+                            {/each}
+                        {/if}
+                    </div>
                 </div>
-            </div>
+            </section>
         {/if}
         <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
     </div>
