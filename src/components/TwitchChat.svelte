@@ -427,9 +427,9 @@
 
 {#if $Config}
     {#if !$UserData}
-        <Title class="my-auto">Loading...</Title>
-    {:else if assetsLoaded !== assetsNeededToLoad}
         <Title class="my-auto">Loading user data...</Title>
+    {:else if assetsLoaded !== assetsNeededToLoad}
+        <Title class="my-auto">Loading twitch data...</Title>
     {:else if !$CurrentChannel}
         <div class="flex flex-1 flex-col items-center justify-center gap-2">
             <Title>Enter channel name</Title>
