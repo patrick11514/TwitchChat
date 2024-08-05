@@ -37,7 +37,7 @@ export class SevenTV {
     private supported = false;
     private userData!: z.infer<typeof UserDataSchema>;
     //cache emote name to index in array
-    private cache: Record<string, number> = {};
+    cache: Record<string, number> = {};
 
     private async connect() {
         const response = await customFetch(
