@@ -148,7 +148,7 @@
             currentTarget: EventTarget & HTMLInputElement;
         }
     ) => {
-        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab, Key.Shift];
+        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab];
 
         if (handleKeys.includes(ev.key as Key)) {
             ev.preventDefault();
@@ -251,11 +251,6 @@
                 message = message.substring(0, message.length - foundEmotes[prev].name.length) + foundEmotes[foundEmoteIndex].name;
             }
 
-            return;
-        }
-
-        //if shift, just don't change anything
-        if (ev.key === Key.Shift) {
             return;
         }
 
