@@ -60,6 +60,12 @@
 
         return channelBadge[lowest];
     };
+
+    export type FoundEmote = {
+        name: string;
+        platform: 'twitch' | '7tv';
+        preview: string;
+    };
 </script>
 
 <script lang="ts">
@@ -69,7 +75,8 @@
     import { Key } from 'ts-key-enum';
     import Badge from './Badge.svelte';
     import Button from './Button.svelte';
-    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, PeopleSettings, UserData } from './Store.svelte';
+    import Image from './Image.svelte';
+    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, GlobalEmotes, PeopleSettings, SevenTVData, UserData } from './Store.svelte';
 
     export let ws: WS;
 
@@ -129,13 +136,19 @@
     let buttons: HTMLButtonElement[] = [];
 
     let selected = 0;
+    let selectingEmote = false;
+    let currentEmoteSelectionText = '';
+
+    let foundEmoteIndex = 0;
+    let foundEmotes: FoundEmote[] = [];
+    let foundElms: HTMLDivElement[] = [];
 
     const inputOnKey = (
         ev: KeyboardEvent & {
             currentTarget: EventTarget & HTMLInputElement;
         }
     ) => {
-        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab];
+        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab, Key.Shift];
 
         if (handleKeys.includes(ev.key as Key)) {
             ev.preventDefault();
@@ -163,10 +176,91 @@
             } else {
                 sendMessage();
             }
+
+            //hide emote select when message was sent
+            selectingEmote = false;
+            return;
+        }
+
+        if (ev.key === Key.Tab) {
+            if (!selectingEmote) {
+                const space = message.split('').toReversed().join('').indexOf(' ');
+
+                if (space === -1) {
+                    currentEmoteSelectionText = message;
+                } else {
+                    currentEmoteSelectionText = message.substring(message.length - space);
+                }
+            }
+
+            if (currentEmoteSelectionText.trim().length == 0) {
+                return;
+            }
+
+            if (!selectingEmote) {
+                selectingEmote = true;
+
+                //find all emotes
+                const fullEmoteList: FoundEmote[] = [
+                    ...Object.values($GlobalEmotes).map((emote) => {
+                        return {
+                            name: emote.name,
+                            platform: 'twitch',
+                            preview: emote.urls.url_4x
+                        } satisfies FoundEmote;
+                    }),
+                    ...Object.keys($SevenTVData.cache).map((emote) => {
+                        const root = $SevenTVData.getEmote(emote)?.data.host.url;
+                        const path = $SevenTVData
+                            .getEmote(emote)
+                            ?.data.host.files.toReversed()
+                            .find((file) => file.format === 'WEBP')?.name;
+
+                        return {
+                            name: emote,
+                            platform: '7tv',
+                            preview: `${root}/${path}`
+                        } satisfies FoundEmote;
+                    })
+                ];
+
+                const selectionLower = currentEmoteSelectionText.toLocaleLowerCase();
+
+                foundEmotes = fullEmoteList.filter((emote) => emote.name.toLocaleLowerCase().startsWith(selectionLower));
+                foundEmoteIndex = 0;
+
+                message = message.substring(0, message.length - currentEmoteSelectionText.length) + foundEmotes[foundEmoteIndex].name;
+            } else {
+                const prev = foundEmoteIndex;
+
+                if (ev.shiftKey) {
+                    if (foundEmoteIndex === 0) {
+                        foundEmoteIndex = foundEmotes.length - 1;
+                    } else {
+                        foundEmoteIndex--;
+                    }
+                } else {
+                    if (foundEmoteIndex === foundEmotes.length - 1) {
+                        foundEmoteIndex = 0;
+                    } else {
+                        foundEmoteIndex++;
+                    }
+                }
+
+                foundElms[foundEmoteIndex]?.scrollIntoView();
+                message = message.substring(0, message.length - foundEmotes[prev].name.length) + foundEmotes[foundEmoteIndex].name;
+            }
+
+            return;
+        }
+
+        //if shift, just don't change anything
+        if (ev.key === Key.Shift) {
             return;
         }
 
         selected = 0;
+        selectingEmote = false;
     };
 
     const channelBadge = $ChannelUserData.badges.first();
@@ -192,6 +286,30 @@
         <div class="my-auto h-auto w-5">
             <Badge name={channelBadge ? channelBadge.name : userBadge ? userBadge.name : undefined} badgesInfo={$ChannelUserData.badgeInfo} badges={$ChannelUserData.badges} />
         </div>
+        {#if selectingEmote}
+            <div class="absolute bottom-28 left-[50%] mx-auto w-[60%] min-w-80 -translate-x-[50%] items-center justify-center whitespace-nowrap">
+                <div
+                    class="inline-block w-max max-w-full flex-row items-center justify-center overflow-x-auto whitespace-nowrap rounded-md border-2 border-gray-500 bg-secondary p-2"
+                >
+                    {#if foundEmotes.length == 0}
+                        <span class="font-poppins font-bold text-red-500">No emote found :(</span>
+                    {:else}
+                        {#each foundEmotes as emote, i}
+                            <div
+                                bind:this={foundElms[i]}
+                                class:bg-primary={i === foundEmoteIndex}
+                                class="mx-1 inline-flex aspect-square h-24 w-24 flex-col items-center justify-between overflow-x-hidden rounded-md"
+                            >
+                                <div class="flex h-full w-full">
+                                    <Image class="m-auto h-16 w-auto" src={emote.preview} alt={emote.name} title={emote.name} />
+                                </div>
+                                <span class="overflow-ellipsis align-middle font-poppins font-bold">{emote.name}</span>
+                            </div>
+                        {/each}
+                    {/if}
+                </div>
+            </div>
+        {/if}
         <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
     </div>
     <Button on:click={sendMessage} class="ml-auto w-28 text-lg">Odeslat</Button>

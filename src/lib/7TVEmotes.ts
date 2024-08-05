@@ -133,4 +133,8 @@ export class SevenTV {
 
         return newParts;
     }
+
+    getEmote(name: string) {
+        return this.userData.emote_set.emotes[this.cache[name]];
+    }
 }
