@@ -1,4 +1,18 @@
 -   [x] Mention menu should be accessable with tab
 -   [x] When click on mention, hide mention menu
--   [ ] Emote picker
+-   [x] Emote picker
 -   [ ] FFZ/BTTV?
+-   [ ] Replying to messages
+-   [ ] Show replies
+-   [ ] Show events
+    -   [ ] sub, giftsub/resub...
+    -   [ ] highlighted message
+    -   [ ] first message
+    -   [ ] repeated viewer
+    -   [ ] host
+    -   [ ] raid
+    -   [ ] hypetrain?
+    -   [ ] pins
+    -   [ ] higlighted message
+    -   [ ] point rewards
+    -   [ ] saskiiii
