@@ -81,6 +81,9 @@
     export let ws: WS;
 
     let message = '';
+    let currentHistory = 0;
+    let currentMessage = '';
+    const messageHistory: string[] = [];
 
     const sendMessage = () => {
         if (!$CurrentChannel) {
@@ -88,6 +91,10 @@
         }
 
         ws.sendMessage($CurrentChannel, message);
+
+        messageHistory.push(message);
+        currentHistory = messageHistory.length;
+
         message = '';
     };
 
@@ -157,15 +164,35 @@
         const buttonsFilter = buttons.filter((btn) => btn);
 
         if (ev.key === Key.ArrowDown) {
-            if (selected < buttonsFilter.length - 1) {
-                selected++;
+            if (showMentionPicker) {
+                if (selected < buttonsFilter.length - 1) {
+                    selected++;
+                }
+            } else {
+                if (currentHistory < messageHistory.length) {
+                    currentHistory++;
+
+                    message = messageHistory[currentHistory] ?? currentMessage;
+                }
             }
             return;
         }
 
         if (ev.key === Key.ArrowUp) {
-            if (selected > 0) {
-                selected--;
+            if (showMentionPicker) {
+                if (selected > 0) {
+                    selected--;
+                }
+            } else {
+                if (currentHistory > 0) {
+                    if (currentHistory === messageHistory.length) {
+                        currentMessage = message;
+                    }
+
+                    currentHistory--;
+
+                    message = messageHistory[currentHistory];
+                }
             }
             return;
         }
