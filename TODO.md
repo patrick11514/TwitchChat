@@ -2,7 +2,7 @@
 -   [x] When click on mention, hide mention menu
 -   [x] Emote picker
 -   [ ] FFZ/BTTV?
--   [ ] Replying to messages
+-   [x] Replying to messages
 -   [ ] Show replies
 -   [ ] Show events
     -   [ ] sub, giftsub/resub...
