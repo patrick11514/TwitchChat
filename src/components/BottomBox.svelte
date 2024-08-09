@@ -269,7 +269,9 @@
                 foundEmotes = fullEmoteList.filter((emote) => emote.name.toLocaleLowerCase().startsWith(selectionLower));
                 foundEmoteIndex = 0;
 
-                message = message.substring(0, message.length - currentEmoteSelectionText.length) + foundEmotes[foundEmoteIndex].name;
+                if (foundEmotes[foundEmoteIndex]) {
+                    message = message.substring(0, message.length - currentEmoteSelectionText.length) + foundEmotes[foundEmoteIndex].name;
+                }
             } else {
                 //may be usefull when I prevent SHIFT + Tab and use it for back scrolling
                 if (ev.shiftKey) {
@@ -298,6 +300,8 @@
     const userBadge = $UserData.badges?.first();
 
     const selectEmote = (index: number) => {
+        if (!foundEmotes[foundEmoteIndex]) return;
+
         const prev = foundEmoteIndex;
         foundEmoteIndex = index;
 
