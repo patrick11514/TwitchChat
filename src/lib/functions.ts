@@ -48,25 +48,6 @@ export const customFetch = async <$ReturnType>(url: string, options: RequestInit
     }
 };
 
-export const indexOfAll = (haystack: string, needle: string, relativeIndex = false) => {
-    let index = 0;
-    const founds: number[] = [];
-
-    while (index < haystack.length) {
-        const found = haystack.substring(index).indexOf(needle);
-
-        if (found === -1) {
-            return founds;
-        }
-
-        founds.push(found + (relativeIndex ? 0 : index));
-
-        index = index + found + needle.length;
-    }
-
-    return founds;
-};
-
 export const insertEmotes = (
     message: string,
     emotes: /* Twitch Emote */
