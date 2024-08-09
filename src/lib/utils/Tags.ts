@@ -35,6 +35,12 @@ export class Tags {
         });
     }
 
+    static fromArray(tags: Tag[]) {
+        const tag = new Tags('');
+        tag.tags = tags;
+        return tag;
+    }
+
     has(name: keyof TagData) {
         for (const tag of this.tags) {
             if (tag.name === name) {
@@ -63,6 +69,10 @@ export class Tags {
         }
 
         throw new Error(`Tag ${name} not found`);
+    }
+
+    size() {
+        return this.tags.length;
     }
 
     *each() {
