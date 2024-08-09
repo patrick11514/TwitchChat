@@ -84,4 +84,6 @@
     >({});
 
     export const SevenTVData = writable<SevenTV>();
+
+    export const replyingMessage = writable<string | null>(null);
 </script>

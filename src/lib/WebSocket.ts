@@ -1,6 +1,7 @@
 import { EventEmitter } from './EventEmitter';
 import { Command } from './utils/Command';
 import { Source } from './utils/Source';
+import { Tag } from './utils/Tag';
 import { Tags } from './utils/Tags';
 
 type Event = {
@@ -127,8 +128,20 @@ export class WS extends EventEmitter<Event> {
         this.send('PART', `#${roomName}`);
     }
 
-    send<$Command extends keyof ResponseCommand>(command: $Command, params: ResponseCommand[$Command]) {
+    send<$Command extends keyof ResponseCommand>(command: $Command, params: ResponseCommand[$Command], tags?: Tags) {
         let str = `${command}`;
+
+        if (tags) {
+            if (tags.size() > 0) {
+                str =
+                    '@' +
+                    Array.from(tags.each())
+                        .map((tag) => `${tag.name}=${tag.value}`)
+                        .join(';') +
+                    ' ' +
+                    str;
+            }
+        }
 
         if (typeof params === 'string') {
             str += ` ${params}`;
@@ -144,6 +157,10 @@ export class WS extends EventEmitter<Event> {
 
     sendMessage(channel: string, message: string) {
         this.send('PRIVMSG', [`#${channel}`, `:${message}`]);
+    }
+
+    reply(channel: string, message: string, originalMessageId: string) {
+        this.send('PRIVMSG', [`#${channel}`, `:${message}`], Tags.fromArray([new Tag('reply-parent-msg-id', originalMessageId)]));
     }
 
     close() {

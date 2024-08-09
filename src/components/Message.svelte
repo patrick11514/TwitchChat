@@ -43,14 +43,16 @@
 </script>
 
 <script lang="ts">
-    import { indexOfAll, insertEmotes, insertMentions } from '$/lib/functions';
+    import { insertEmotes, insertMentions } from '$/lib/functions';
     import { Emotes } from '$/lib/utils/Emotes';
     import Badge from './Badge.svelte';
     import { DeletedMessages } from './ChatWindow.svelte';
+    import Icon from './Icon.svelte';
     import Image from './Image.svelte';
-    import { AllPeople, Config, SevenTVData } from './Store.svelte';
+    import { AllPeople, Config, replyingMessage, SevenTVData } from './Store.svelte';
 
     export let data: Message;
+    export let controlls = true;
 
     const format = (date: Date) => {
         const hours = date.getHours().toString().padStart(2, '0');
@@ -71,7 +73,7 @@
                 continue;
             }
 
-            let starts = indexOfAll(message.toLocaleLowerCase(), username);
+            let starts = message.toLocaleLowerCase().indexOfAll(username);
 
             if (starts.length === 0) {
                 continue;
@@ -127,6 +129,12 @@
     const hasMention = (message: string) => {
         return message.toLocaleLowerCase().includes($Config.username);
     };
+
+    const beginReply = () => {
+        if (data.type !== 'chat') return;
+
+        replyingMessage.set(data.tags.get('id'));
+    };
 </script>
 
 <div
@@ -134,7 +142,7 @@
     class:bg-red-700={data.type === 'leave'}
     class:line-through={data.type === 'chat' && $DeletedMessages[data.tags.get('id') ?? '']}
     class:bg-red-900={data.type === 'chat' && hasMention(data.content)}
-    class="block flex-wrap items-center gap-2 bg-transparent px-2 py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
+    class="group block flex-wrap items-center gap-2 bg-transparent px-2 py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
 >
     {#if data.type === 'chat'}
         <span class="align-middle text-sm text-gray-400">{format(data.date)}</span>
@@ -157,6 +165,13 @@
                 {/if}
             {/each}
         </span>
+        {#if controlls}
+            <div class="absolute right-0 hidden -translate-y-1 items-center justify-center gap-2 px-2 align-middle text-xl group-hover:inline-flex">
+                <button class="flex items-center justify-center" on:click={beginReply}>
+                    <Icon name="bi-reply-fill" class="transition-color duration-200 hover:text-green-500" />
+                </button>
+            </div>
+        {/if}
         {#if $DeletedMessages[data.tags.get('id') ?? '']}
             <span class="text-gray-400"> (Message deleted at {format($DeletedMessages[data.tags.get('id') ?? ''])})</span>
         {/if}

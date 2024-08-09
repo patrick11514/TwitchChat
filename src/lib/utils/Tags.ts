@@ -21,6 +21,7 @@ export type TagData = {
     'returning-chatter': boolean;
     'room-id': string;
     'target-msg-id': string;
+    'reply-parent-msg-id': string;
 };
 
 type TagValues = TagData[keyof TagData];
@@ -29,10 +30,14 @@ export class Tags {
     private tags: Tag[];
 
     constructor(raw: string) {
-        this.tags = raw.split(';').map((splited) => {
-            const [name, value] = splited.split('=');
-            return new Tag(name, value.length == 0 ? null : value);
-        });
+        if (raw.length > 0) {
+            this.tags = raw.split(';').map((splited) => {
+                const [name, value] = splited.split('=');
+                return new Tag(name, value.length == 0 ? null : value);
+            });
+        } else {
+            this.tags = [];
+        }
     }
 
     static fromArray(tags: Tag[]) {

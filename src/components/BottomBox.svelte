@@ -75,8 +75,10 @@
     import { Key } from 'ts-key-enum';
     import Badge from './Badge.svelte';
     import Button from './Button.svelte';
+    import { Messages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
-    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, GlobalEmotes, PeopleSettings, SevenTVData, UserData } from './Store.svelte';
+    import Message from './Message.svelte';
+    import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, GlobalEmotes, PeopleSettings, replyingMessage, SevenTVData, UserData } from './Store.svelte';
 
     export let ws: WS;
 
@@ -90,7 +92,12 @@
             return;
         }
 
-        ws.sendMessage($CurrentChannel, message);
+        if ($replyingMessage) {
+            ws.reply($CurrentChannel, message, $replyingMessage);
+            replyingMessage.set(null);
+        } else {
+            ws.sendMessage($CurrentChannel, message);
+        }
 
         messageHistory.push(message);
         currentHistory = messageHistory.length;
@@ -155,10 +162,15 @@
             currentTarget: EventTarget & HTMLInputElement;
         }
     ) => {
-        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab];
+        const handleKeys = [Key.ArrowDown, Key.ArrowUp, Key.Enter, Key.Tab, Key.Escape];
 
         if (handleKeys.includes(ev.key as Key)) {
             ev.preventDefault();
+        }
+
+        if (ev.key === Key.Escape && $replyingMessage) {
+            replyingMessage.set(null);
+            return;
         }
 
         const buttonsFilter = buttons.filter((btn) => btn);
@@ -295,7 +307,7 @@
 
 <div class="flex flex-col gap-4 px-4 pb-4">
     {#if showMentionPicker && mentionEntries(mentionTyped) > 0}
-        <div class="flex w-full flex-col rounded-md border-2 border-gray-500">
+        <div class="z-10 flex w-full flex-col rounded-md border-2 border-gray-500">
             {#each generateMentionList(mentionTyped) as [name, options], id}
                 <button
                     bind:this={buttons[id]}
@@ -308,38 +320,47 @@
             {/each}
         </div>
     {/if}
-    <div class="flex flex-row gap-2 rounded-md border-2 border-gray-500 px-2 py-1">
-        <div class="my-auto h-auto w-5">
-            <Badge name={channelBadge ? channelBadge.name : userBadge ? userBadge.name : undefined} badgesInfo={$ChannelUserData.badgeInfo} badges={$ChannelUserData.badges} />
-        </div>
-        {#if selectingEmote}
-            <section class="absolute bottom-28 left-0 flex w-full items-center justify-center">
-                <div class="mx-auto flex w-[60%] min-w-80 items-center justify-center whitespace-nowrap">
-                    <div
-                        class="inline-block w-max max-w-full flex-row items-center justify-center self-center overflow-x-auto whitespace-nowrap rounded-md border-2 border-gray-500 bg-secondary p-2"
-                    >
-                        {#if foundEmotes.length == 0}
-                            <span class="font-poppins font-bold text-red-500">No emote found :(</span>
-                        {:else}
-                            {#each foundEmotes as emote, i}
-                                <button
-                                    bind:this={foundElms[i]}
-                                    class:bg-primary={i === foundEmoteIndex}
-                                    class="mx-1 inline-flex aspect-square h-24 w-24 flex-col items-center justify-between overflow-x-hidden rounded-md transition-colors duration-150 hover:bg-primary"
-                                    on:click={() => selectEmote(i)}
-                                >
-                                    <div class="flex h-full w-full">
-                                        <Image class="m-auto h-16 w-auto" src={emote.preview} alt={emote.name} title={emote.name} />
-                                    </div>
-                                    <span class="overflow-ellipsis align-middle font-poppins font-bold">{emote.name}</span>
-                                </button>
-                            {/each}
-                        {/if}
-                    </div>
-                </div>
-            </section>
+
+    <div class="flex flex-col rounded-md border-2 border-gray-500 px-2 py-1">
+        {#if $replyingMessage}
+            <div class="flex flex-col">
+                <h2 class="font-poppins text-lg font-bold">Replying to:</h2>
+                <Message data={$Messages.findOrThrow((message) => message.type === 'chat' && message.tags.get('id') === $replyingMessage)} />
+            </div>
         {/if}
-        <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
+        <div class="flex flex-row gap-2">
+            <div class="my-auto h-auto w-5">
+                <Badge name={channelBadge ? channelBadge.name : userBadge ? userBadge.name : undefined} badgesInfo={$ChannelUserData.badgeInfo} badges={$ChannelUserData.badges} />
+            </div>
+            {#if selectingEmote}
+                <section class="absolute bottom-28 left-0 z-20 flex w-full items-center justify-center">
+                    <div class="mx-auto flex w-[60%] min-w-80 items-center justify-center whitespace-nowrap">
+                        <div
+                            class="inline-block w-max max-w-full flex-row items-center justify-center self-center overflow-x-auto whitespace-nowrap rounded-md border-2 border-gray-500 bg-secondary p-2"
+                        >
+                            {#if foundEmotes.length == 0}
+                                <span class="font-poppins font-bold text-red-500">No emote found :(</span>
+                            {:else}
+                                {#each foundEmotes as emote, i}
+                                    <button
+                                        bind:this={foundElms[i]}
+                                        class:bg-primary={i === foundEmoteIndex}
+                                        class="mx-1 inline-flex aspect-square h-24 w-24 flex-col items-center justify-between overflow-x-hidden rounded-md transition-colors duration-150 hover:bg-primary"
+                                        on:click={() => selectEmote(i)}
+                                    >
+                                        <div class="flex h-full w-full">
+                                            <Image class="m-auto h-16 w-auto" src={emote.preview} alt={emote.name} title={emote.name} />
+                                        </div>
+                                        <span class="overflow-ellipsis align-middle font-poppins font-bold">{emote.name}</span>
+                                    </button>
+                                {/each}
+                            {/if}
+                        </div>
+                    </div>
+                </section>
+            {/if}
+            <input bind:this={input} bind:value={message} on:keydown={inputOnKey} type="text" class="w-full bg-transparent outline-none" placeholder="Send message" />
+        </div>
     </div>
     <Button on:click={sendMessage} class="ml-auto w-28 text-lg">Odeslat</Button>
 </div>

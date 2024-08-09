@@ -1,6 +1,6 @@
 import type { PartType } from '$/components/Message.svelte';
 import { z } from 'zod';
-import { customFetch, indexOfAll, insertEmotes } from './functions';
+import { customFetch, insertEmotes } from './functions';
 
 const UserDataSchema = z.object({
     id: z.string(),
@@ -89,7 +89,7 @@ export class SevenTV {
             }[] = [];
 
             for (const emote of emotes) {
-                const indexes = indexOfAll(part.content, emote);
+                const indexes = part.content.indexOfAll(emote);
 
                 if (indexes.length == 0) {
                     continue;
