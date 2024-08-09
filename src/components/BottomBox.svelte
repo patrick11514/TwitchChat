@@ -77,6 +77,7 @@
     import Button from './Button.svelte';
     import { Messages } from './ChatWindow.svelte';
     import Image from './Image.svelte';
+    import type { Message as MessageType } from './Message.svelte';
     import Message from './Message.svelte';
     import { ChannelBadges, ChannelUserData, CurrentChannel, GlobalBadges, GlobalEmotes, PeopleSettings, replyingMessage, SevenTVData, UserData } from './Store.svelte';
 
@@ -310,6 +311,9 @@
             input.focus();
         }
     });
+
+    let replyMessageData: undefined | MessageType;
+    $: replyMessageData = $Messages.find((message) => message.type === 'chat' && message.tags.get('id') === $replyingMessage);
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
@@ -332,7 +336,9 @@
         {#if $replyingMessage}
             <div class="flex flex-col">
                 <h2 class="font-poppins text-lg font-bold">Replying to:</h2>
-                <Message data={$Messages.findOrThrow((message) => message.type === 'chat' && message.tags.get('id') === $replyingMessage)} />
+                {#if replyMessageData}
+                    <Message data={replyMessageData} />
+                {/if}
             </div>
         {/if}
         <div class="flex flex-row gap-2">
