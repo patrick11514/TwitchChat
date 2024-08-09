@@ -303,6 +303,13 @@
         foundElms[foundEmoteIndex]?.scrollIntoView();
         message = message.substring(0, message.length - foundEmotes[prev].name.length) + foundEmotes[foundEmoteIndex].name;
     };
+
+    //if we select reply to message, autofocus input
+    replyingMessage.subscribe((value) => {
+        if (value) {
+            input.focus();
+        }
+    });
 </script>
 
 <div class="flex flex-col gap-4 px-4 pb-4">
