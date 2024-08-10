@@ -142,7 +142,7 @@
     class:bg-red-700={data.type === 'leave'}
     class:line-through={data.type === 'chat' && $DeletedMessages[data.tags.get('id') ?? '']}
     class:bg-red-900={data.type === 'chat' && hasMention(data.content)}
-    class="group block flex-wrap items-center gap-2 bg-transparent px-2 py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
+    class="gap-2px-2 group block flex-wrap items-center py-0.5 transition-colors duration-200 hover:bg-gray-500 hover:bg-opacity-50"
 >
     {#if data.type === 'chat'}
         <span class="align-middle text-sm text-gray-400">{format(data.date)}</span>
@@ -165,6 +165,9 @@
                 {/if}
             {/each}
         </span>
+        {#if data.tags.has('reply-parent-msg-id')}
+            IS reply
+        {/if}
         {#if controlls}
             <div class="absolute right-0 hidden -translate-y-1 items-center justify-center gap-2 px-2 align-middle text-xl group-hover:inline-flex">
                 <button class="flex items-center justify-center" on:click={beginReply}>
