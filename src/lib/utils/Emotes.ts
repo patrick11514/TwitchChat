@@ -9,16 +9,21 @@ export class Emotes {
             return;
         }
 
-        this.emotes = raw.split('/').map((text) => {
+        this.emotes = raw.split('/').flatMap((text) => {
             const [name, textInfo] = text.split(':');
-            const [start, end] = textInfo.split('-');
+            const sections = textInfo.split(',').map((section) => section.split('-'));
 
-            const emote = new Emote();
-            emote.name = name;
-            emote.textStart = parseInt(start);
-            emote.textEnd = parseInt(end);
+            const emotes = [];
 
-            return emote;
+            for (const [start, end] of sections) {
+                const emote = new Emote();
+                emote.name = name;
+                emote.textStart = parseInt(start);
+                emote.textEnd = parseInt(end);
+                emotes.push(emote);
+            }
+
+            return emotes;
         });
     }
 
@@ -44,6 +49,12 @@ export class Emotes {
 
     *each() {
         for (const emote of this.emotes) {
+            yield emote;
+        }
+    }
+
+    *eachSorted() {
+        for (const emote of this.emotes.toSorted((a, b) => a.textStart - b.textStart)) {
             yield emote;
         }
     }
