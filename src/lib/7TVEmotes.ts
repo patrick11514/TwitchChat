@@ -124,7 +124,11 @@ export class SevenTV {
                 }
             }
 
-            newParts.push(...insertEmotes(part.content, emotesIndexes));
+            if (emotesIndexes.length > 0) {
+                newParts.push(...insertEmotes(part.content, emotesIndexes));
+            } else {
+                newParts.push(part);
+            }
         }
 
         if (newParts.length === 0) {
