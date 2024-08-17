@@ -345,7 +345,7 @@
                     <button on:click={() => replyingMessage.set(null)} class="ml-auto text-2xl text-red-500"><Icon name="bi-x-lg" /></button>
                 </div>
                 {#if replyMessageData}
-                    <Message data={replyMessageData} />
+                    <Message controlls={false} data={replyMessageData} />
                 {/if}
             </div>
         {/if}
