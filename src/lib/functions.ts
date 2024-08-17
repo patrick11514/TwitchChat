@@ -66,7 +66,7 @@ export const insertEmotes = (
     let currentIndex = 0;
     const emoteParts: PartType[] = [];
 
-    for (const emote of emotes instanceof Emotes ? emotes.each() : emotes) {
+    for (const emote of emotes instanceof Emotes ? emotes.eachSorted() : emotes) {
         const cut = message.substring(currentIndex, 'textStart' in emote ? emote.textStart : emote.start);
 
         if (cut.length > 0) {
@@ -86,10 +86,16 @@ export const insertEmotes = (
         currentIndex = 'textEnd' in emote ? emote.textEnd + 1 : emote.start + emote.emote.length;
     }
 
-    emoteParts.push({
-        type: 'message',
-        content: message.substring(currentIndex, message.length)
-    });
+    const rest = message.substring(currentIndex, message.length);
+
+    if (rest.length > 0) {
+        emoteParts.push({
+            type: 'message',
+            content: rest
+        });
+    }
+
+    console.log(emoteParts);
 
     return emoteParts;
 };
