@@ -76,6 +76,7 @@
     import Badge from './Badge.svelte';
     import Button from './Button.svelte';
     import { Messages } from './ChatWindow.svelte';
+    import Icon from './Icon.svelte';
     import Image from './Image.svelte';
     import type { Message as MessageType } from './Message.svelte';
     import Message from './Message.svelte';
@@ -312,7 +313,7 @@
     //if we select reply to message, autofocus input
     replyingMessage.subscribe((value) => {
         if (value) {
-            input.focus();
+            input?.focus();
         }
     });
 
@@ -338,8 +339,11 @@
 
     <div class="flex flex-col rounded-md border-2 border-gray-500 px-2 py-1">
         {#if $replyingMessage}
-            <div class="flex flex-col">
-                <h2 class="font-poppins text-lg font-bold">Replying to:</h2>
+            <div class="flex w-full flex-col">
+                <div class="flex w-full">
+                    <h2 class="font-poppins text-lg font-bold">Replying to:</h2>
+                    <button on:click={() => replyingMessage.set(null)} class="ml-auto text-2xl text-red-500"><Icon name="bi-x-lg" /></button>
+                </div>
                 {#if replyMessageData}
                     <Message data={replyMessageData} />
                 {/if}
