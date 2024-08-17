@@ -22,6 +22,8 @@ export type TagData = {
     'room-id': string;
     'target-msg-id': string;
     'reply-parent-msg-id': string;
+    'reply-parent-display-name': string;
+    'reply-parent-msg-body': string;
 };
 
 type TagValues = TagData[keyof TagData];

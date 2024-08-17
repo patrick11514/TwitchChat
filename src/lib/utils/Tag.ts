@@ -43,6 +43,8 @@ export class Tag {
             case 'id':
             case 'room-id':
             case 'target-msg-id':
+            case 'reply-parent-msg-body':
+            case 'reply-parent-display-name':
             case 'reply-parent-msg-id':
                 this.value = value;
                 break;
