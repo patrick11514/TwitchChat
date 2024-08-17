@@ -152,7 +152,7 @@
     <div class="flex w-full flex-row gap-2 px-2 py-0.5">
         <Icon name="bi-reply-fill" />
         <div class="w-full">
-            Replying to: @{data.tags.get('reply-parent-display-name')}: {data.tags.get('reply-parent-msg-body')}
+            Replying to: @{data.tags.get('reply-parent-display-name')}: {data.tags.get('reply-parent-msg-body')?.replaceAll('\\s', ' ')}
         </div>
     </div>
 {/if}
