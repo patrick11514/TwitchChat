@@ -16,3 +16,4 @@
     -   [ ] higlighted message
     -   [ ] point rewards
     -   [ ] saskiiii
+-   [x] Fix display of buttons (reply..)
