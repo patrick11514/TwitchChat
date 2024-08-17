@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
     import type { Source } from '$/lib/utils/Source';
-    import type { Tags } from '$/lib/utils/Tags';
+    import { Tags } from '$/lib/utils/Tags';
 
     type ChatMessage = {
         //user part
@@ -113,6 +113,17 @@
     };
 
     const parseMessage = (message: string, emotes: Emotes | null): PartType[] => {
+        if (data.type !== 'chat') return [];
+        //strip mention at the start if message is reply
+        if (data.tags.has('reply-parent-msg-id')) {
+            //check if starts with @
+            if (message.startsWith('@')) {
+                const space = message.indexOf(' ');
+                //start message from start
+                message = message.substring(space);
+            }
+        }
+
         let parts: PartType[] = [];
 
         for (const part of insertAllEmotes(message, emotes)) {
@@ -137,6 +148,14 @@
     };
 </script>
 
+{#if data.type === 'chat' && data.tags.has('reply-parent-msg-id')}
+    <div class="flex w-full flex-row gap-2 px-2 py-0.5">
+        <Icon name="bi-reply-fill" />
+        <div class="w-full">
+            Replying to: @{data.tags.get('reply-parent-display-name')}: {data.tags.get('reply-parent-msg-body')}
+        </div>
+    </div>
+{/if}
 <div
     class:bg-green-700={data.type === 'join'}
     class:bg-red-700={data.type === 'leave'}
@@ -165,9 +184,6 @@
                 {/if}
             {/each}
         </span>
-        {#if data.tags.has('reply-parent-msg-id')}
-            IS reply
-        {/if}
         {#if controlls}
             <div class="absolute right-0 hidden -translate-y-1 items-center justify-center gap-2 px-2 align-middle text-xl group-hover:inline-flex">
                 <button class="flex items-center justify-center" on:click={beginReply}>
