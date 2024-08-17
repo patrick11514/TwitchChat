@@ -297,7 +297,7 @@
         selectingEmote = false;
     };
 
-    const channelBadge = $ChannelUserData.badges.first();
+    const channelBadge = $ChannelUserData.badges?.first();
     const userBadge = $UserData.badges?.first();
 
     const selectEmote = (index: number) => {
