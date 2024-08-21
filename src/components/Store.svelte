@@ -86,4 +86,7 @@
     export const SevenTVData = writable<SevenTV>();
 
     export const replyingMessage = writable<string | null>(null);
+
+    export const logged = writable(false);
+    export const SettingsOpened = writable(false);
 </script>
