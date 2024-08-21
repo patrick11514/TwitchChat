@@ -70,6 +70,7 @@
 
 <script lang="ts">
     import type { WS } from '$/lib/WebSocket';
+    import { Badge as BadgeType } from '$/lib/utils/Badge';
     import type { Badges } from '$/lib/utils/Badges';
     import { get } from 'svelte/store';
     import { Key } from 'ts-key-enum';
@@ -297,8 +298,10 @@
         selectingEmote = false;
     };
 
-    const channelBadge = $ChannelUserData.badges?.first();
-    const userBadge = $UserData.badges?.first();
+    let channelBadge: BadgeType | null;
+    $: channelBadge = $ChannelUserData.badges?.first();
+    let userBadge: BadgeType | null;
+    $: userBadge = $UserData.badges?.first();
 
     const selectEmote = (index: number) => {
         if (!foundEmotes[foundEmoteIndex]) return;
