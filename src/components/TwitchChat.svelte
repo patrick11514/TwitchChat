@@ -10,7 +10,9 @@
     import BottomBox from './BottomBox.svelte';
     import Button from './Button.svelte';
     import ChatWindow, { DeletedMessages, Messages } from './ChatWindow.svelte';
+    import Icon from './Icon.svelte';
     import Input from './Input.svelte';
+    import Settings from './Settings.svelte';
     import {
         AllPeople,
         BadgeSchema,
@@ -24,6 +26,7 @@
         PeopleSettings,
         RawChannelTags,
         RoomId,
+        SettingsOpened,
         SevenTVData,
         UserData
     } from './Store.svelte';
@@ -426,12 +429,18 @@
 </script>
 
 {#if $Config}
-    {#if !$UserData}
+    {#if $SettingsOpened}
+        <Settings />
+    {:else if !$UserData}
         <Title class="my-auto">Loading user data...</Title>
     {:else if assetsLoaded !== assetsNeededToLoad}
         <Title class="my-auto">Loading twitch data...</Title>
     {:else if !$CurrentChannel}
-        <div class="absolute flex p-4">Top</div>
+        <div class="absolute top-0 flex w-full p-4">
+            <button on:click={() => SettingsOpened.set(true)} class="ml-auto rounded-md p-2 transition-colors duration-200 hover:bg-secondary">
+                <Icon name="bi-gear-fill" class="text-4xl text-gray-500" />
+            </button>
+        </div>
         <div class="flex flex-1 flex-col items-center justify-center gap-2">
             <Title>Enter channel name</Title>
             <Input
