@@ -24,7 +24,7 @@
         }
     });
 
-    const logout = () => {
+    const leaveChannel = () => {
         if (!$CurrentChannel) {
             SwalAlert({
                 icon: 'error',
@@ -47,5 +47,5 @@
 
 <div class="flex w-full flex-row items-center justify-between gap-2 border-b-2 border-b-gray-500 p-2">
     <h2 class="text-center font-poppins text-xl font-bold">Connected to <span>{$CurrentChannel}</span></h2>
-    <Button on:click={logout}>Logout</Button>
+    <Button on:click={leaveChannel}>Leave channel</Button>
 </div>
