@@ -442,7 +442,7 @@
                 }}
                 bind:value={newChannel}
             />
-            <Button on:click={joinChannel}>Enter</Button>
+            <Button on:click={joinChannel}>Join chat</Button>
         </div>
     {:else if $ChannelUserData}
         <section class="flex max-h-screen flex-1 flex-col">
