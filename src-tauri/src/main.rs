@@ -68,11 +68,30 @@ fn get_config() -> Result<Config, Error> {
     }
 }
 
+#[tauri::command]
+fn logout() -> Result<(), Error> {
+    match get_directory() {
+        Some(path) => {
+            if path.exists() {
+                match Config::delete(path) {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(err.into()),
+                }
+            } else {
+                Ok(())
+            }
+        }
+        None => Err(Error::Other("Unable to get home directory".into())),
+    }
+}
+
 fn main() {
     dotenv().ok();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![logged, save_token, get_config])
+        .invoke_handler(tauri::generate_handler![
+            logged, save_token, get_config, logout
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

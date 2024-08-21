@@ -29,6 +29,12 @@ pub mod config {
             }
         }
 
+        pub fn delete(program_directory: PathBuf) -> Result<(), anyhow::Error> {
+            fs::remove_file(get_config_directory(program_directory))?;
+
+            Ok(())
+        }
+
         pub fn write(self, program_directory: PathBuf) -> Result<(), anyhow::Error> {
             let str = serde_json::to_string(&self)?;
 
