@@ -431,6 +431,7 @@
     {:else if assetsLoaded !== assetsNeededToLoad}
         <Title class="my-auto">Loading twitch data...</Title>
     {:else if !$CurrentChannel}
+        <div class="absolute flex p-4">Top</div>
         <div class="flex flex-1 flex-col items-center justify-center gap-2">
             <Title>Enter channel name</Title>
             <Input
